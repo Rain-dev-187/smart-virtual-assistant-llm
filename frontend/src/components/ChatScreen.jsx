@@ -70,8 +70,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
 
       {/* Input bar — melayang transparan di mobile, normal di desktop */}
-      <div className="absolute bottom-16 inset-x-0 z-10 px-4 pb-3 pt-2 md:static md:z-auto md:shrink-0">
-        <div className="flex items-center gap-2 bg-card rounded-full pl-5 pr-2 py-2">
+      <div className="absolute bottom-16 inset-x-0 z-10 px-4 pb-3 pt-2 md:static md:z-auto md:shrink-0 md:pb-6">
+        <div className="flex items-center gap-2 bg-card md:bg-transparent md:border md:border-white/15 rounded-full pl-5 pr-2 py-2">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
