@@ -124,16 +124,13 @@ export function GaleriSidebar({ filter, onFilter }) {
   );
 }
 
-/* ---------- Panel kanan (desktop, tampilan chat) ---------- */
-export function RightPanel({ onClose }) {
+/* ---------- Konten profil CEPIRIT (dipakai panel kanan & sheet profil) ---------- */
+export function ProfilCepirit() {
   const [tab, setTab] = useState(0);
   const tabs = [I.menu, I.shield, I.chat, I.lock];
   return (
-    <aside className="hidden xl:flex w-80 shrink-0 h-full border-l border-white/10 flex-col p-6 overflow-y-auto no-scrollbar bg-black">
-      <div className="flex justify-end">
-        <button onClick={onClose} className="text-gray-500 hover:text-white text-2xl leading-none" aria-label="Tutup panel">×</button>
-      </div>
-      <div className="flex flex-col items-center mt-2">
+    <div className="flex flex-col">
+      <div className="flex flex-col items-center">
         <div className="relative">
           <CepiritAvatar size={96} label={false} />
           <span className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-card2 border-2 border-black flex items-center justify-center text-gray-300">
@@ -171,6 +168,20 @@ export function RightPanel({ onClose }) {
           <div className="font-medium text-[15px]">Heartbeat</div>
           <div className="text-gray-500 text-[13px]">Setiap 30 menit</div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Panel kanan (desktop, tampilan chat) ---------- */
+export function RightPanel({ onClose }) {
+  return (
+    <aside className="hidden xl:flex w-80 shrink-0 h-full border-l border-white/10 flex-col p-6 overflow-y-auto no-scrollbar bg-black">
+      <div className="flex justify-end">
+        <button onClick={onClose} className="text-gray-500 hover:text-white text-2xl leading-none" aria-label="Tutup panel">×</button>
+      </div>
+      <div className="mt-2">
+        <ProfilCepirit />
       </div>
     </aside>
   );

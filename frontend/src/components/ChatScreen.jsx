@@ -9,7 +9,7 @@ const INITIAL = [
   },
 ];
 
-export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide }) {
+export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile }) {
   const [messages, setMessages] = useState(INITIAL);
   const [draft, setDraft] = useState("");
 
@@ -55,9 +55,6 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide 
           Obrolan
         </button>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 bg-card2 text-white rounded-full pl-4 pr-5 py-2.5 text-[15px] font-medium hover:bg-white/10 transition-colors">
-            {I.gift} Undang
-          </button>
           <button onClick={onOpenMenu} className="text-white text-2xl leading-none px-2" aria-label="Menu">⋮</button>
         </div>
       </div>
@@ -65,7 +62,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide 
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4 relative">
         <div className="flex justify-center">
-          <CepiritAvatar size={72} />
+          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full">
+            <CepiritAvatar size={72} />
+          </button>
         </div>
 
         <div className="flex justify-end">
@@ -90,12 +89,6 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide 
           )
         )}
 
-        {/* Tombol Undang melayang (mobile saja, di desktop ada di header) */}
-        <div className="md:hidden sticky bottom-2 flex justify-end pr-1">
-          <button className="flex items-center gap-2 bg-card2 text-white rounded-full pl-4 pr-5 py-2.5 shadow-lg text-[16px] font-medium">
-            {I.gift} Undang
-          </button>
-        </div>
       </div>
 
       {/* Input bar */}

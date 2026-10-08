@@ -12,6 +12,7 @@ import {
   IconRail,
   GaleriSidebar,
   RightPanel,
+  ProfilCepirit,
   SasaranPage,
   GaleriPage,
   SasaranForm,
@@ -110,6 +111,12 @@ export default function App() {
         ) : null;
       case "artefak-form":
         return <ArtefakForm onSubmit={addArtefak} onBack={back} />;
+      case "profil":
+        return (
+          <div className="px-2 pt-2">
+            <ProfilCepirit />
+          </div>
+        );
       default:
         return null;
     }
@@ -121,6 +128,7 @@ export default function App() {
         onOpenDrawer={() => setDrawerOpen(true)}
         onOpenMenu={() => openSheet("menu")}
         onToggleChatSide={() => setChatSide((s) => !s)}
+        onOpenProfile={() => openSheet("profil")}
       />
     ) : view === "sasaran" ? (
       <SasaranPage
