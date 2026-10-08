@@ -61,9 +61,3 @@ body {
 .cepirit-look {
   animation: cepirit-look 2.2s ease-in-out infinite alternate;
 }
-@media (prefers-reduced-motion: reduce) {
-  .cepirit-sway,
-  .cepirit-look {
-    animation: none;
-  }
-}
