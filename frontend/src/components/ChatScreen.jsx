@@ -29,27 +29,12 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Status bar tiruan */}
-      <div className="flex items-center justify-between px-6 pt-3 text-[13px] font-semibold shrink-0">
-        <span>11:31</span>
-        <span className="flex items-center gap-1.5 text-gray-300">
-          <span className="text-[11px]">📶 📶</span>
-          <span>📡</span>
-          <span className="bg-gray-700 rounded-md px-1.5 py-0.5 text-[11px]">77</span>
-        </span>
-      </div>
-
-      {/* Header browser */}
-      <div className="flex items-center gap-3 px-4 py-2.5 shrink-0 border-b border-white/5">
-        <button className="text-white" aria-label="Beranda">{I.home}</button>
-        <div className="flex-1 flex items-center gap-2 bg-card rounded-full px-4 py-2.5 text-gray-300">
-          <span className="text-gray-500">⛓</span>
-          <span className="text-[15px]">muse.ai</span>
+      {/* Header aplikasi */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <MuseAvatar size={36} />
+          <span className="text-white text-[17px] font-semibold">Muse</span>
         </div>
-        <button className="text-white text-3xl leading-none" aria-label="Tab baru">+</button>
-        <button className="relative text-white" aria-label="Tab">
-          <span className="block w-8 h-8 rounded-lg border-2 border-gray-500 items-center justify-center flex text-[13px] font-bold">12</span>
-        </button>
         <button onClick={onOpenMenu} className="text-white text-2xl leading-none px-1" aria-label="Menu">⋮</button>
       </div>
 
