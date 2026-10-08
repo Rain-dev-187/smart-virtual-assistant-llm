@@ -131,6 +131,8 @@ export default function App() {
         onOpenDrawer={() => setDrawerOpen(true)}
         onOpenMenu={() => openSheet("menu")}
         onToggleChatSide={() => setChatSide((s) => !s)}
+        onOpenProfile={openProfile}
+        panelOpen={rightOpen}
       />
     ) : view === "sasaran" ? (
       <SasaranPage
@@ -193,7 +195,6 @@ export default function App() {
           }}
           onOpenSearch={() => setSearchOpen(true)}
           onOpenMenu={() => openSheet("menu")}
-          onOpenProfile={openProfile}
         />
 
         {view === "chat" && sidebarOpen && (
