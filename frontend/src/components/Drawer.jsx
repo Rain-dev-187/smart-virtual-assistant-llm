@@ -4,7 +4,7 @@ import { I, CepiritAvatar } from "./ui";
 /* ---------- Drawer samping ----------
    asSidebar=true  -> panel statis untuk sidebar desktop (tanpa overlay)
    asSidebar=false -> drawer overlay untuk mobile                            */
-export default function Drawer({ open, onClose, onOpenSheet, asSidebar = false }) {
+export default function Drawer({ open, onClose, onOpenSheet, onNavigate = () => {}, asSidebar = false }) {
   const [page, setPage] = useState("main");
 
   if (!open && !asSidebar) return null;
@@ -52,6 +52,31 @@ export default function Drawer({ open, onClose, onOpenSheet, asSidebar = false }
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.2" strokeLinecap="round">
             <polyline points="9 18 15 12 9 6" />
           </svg>
+        </button>
+
+        {/* Jelajah */}
+        <div className="px-5 pt-4 pb-1 text-gray-400 text-[16px]">Jelajah</div>
+        <button
+          onClick={() => onNavigate("sasaran")}
+          className="w-full flex items-center gap-3 px-5 py-3 text-left text-gray-300 text-[17px]"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          Sasaran
+        </button>
+        <button
+          onClick={() => onNavigate("galeri")}
+          className="w-full flex items-center gap-3 px-5 py-3 text-left text-gray-300 text-[17px]"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          Galeri
         </button>
       </div>
     ) : (

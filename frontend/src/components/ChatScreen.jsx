@@ -9,7 +9,7 @@ const INITIAL = [
   },
 ];
 
-export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
+export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide }) {
   const [messages, setMessages] = useState(INITIAL);
   const [draft, setDraft] = useState("");
 
@@ -29,8 +29,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
 
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto">
-      {/* Header aplikasi */}
-      <div className="flex items-center justify-between px-4 py-3 shrink-0">
+      {/* Header aplikasi (mobile) */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 shrink-0">
         <div className="flex items-center gap-2.5">
           <CepiritAvatar size={36} label={false} />
           <div className="flex flex-col leading-tight">
@@ -39,6 +39,27 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
           </div>
         </div>
         <button onClick={onOpenMenu} className="text-white text-2xl leading-none px-1" aria-label="Menu">⋮</button>
+      </div>
+
+      {/* Header desktop ala muse.ai */}
+      <div className="hidden md:flex items-center justify-between px-6 py-3 shrink-0">
+        <button
+          onClick={onToggleChatSide}
+          className="flex items-center gap-2 bg-card2 text-white rounded-full px-4 py-2 text-[15px] font-medium hover:bg-white/10 transition-colors"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="4" y1="7" x2="20" y2="7" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="17" x2="20" y2="17" />
+          </svg>
+          Obrolan
+        </button>
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 bg-card2 text-white rounded-full pl-4 pr-5 py-2.5 text-[15px] font-medium hover:bg-white/10 transition-colors">
+            {I.gift} Undang
+          </button>
+          <button onClick={onOpenMenu} className="text-white text-2xl leading-none px-2" aria-label="Menu">⋮</button>
+        </div>
       </div>
 
       {/* Area chat */}
@@ -69,8 +90,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
           )
         )}
 
-        {/* Tombol Undang melayang */}
-        <div className="sticky bottom-2 flex justify-end pr-1">
+        {/* Tombol Undang melayang (mobile saja, di desktop ada di header) */}
+        <div className="md:hidden sticky bottom-2 flex justify-end pr-1">
           <button className="flex items-center gap-2 bg-card2 text-white rounded-full pl-4 pr-5 py-2.5 shadow-lg text-[16px] font-medium">
             {I.gift} Undang
           </button>
