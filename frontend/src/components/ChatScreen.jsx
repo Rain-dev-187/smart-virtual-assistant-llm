@@ -28,7 +28,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto">
       {/* Header aplikasi */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0">
         <div className="flex items-center gap-2.5">
@@ -78,7 +78,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
       <div className="shrink-0 px-4 pb-5 pt-2 relative">
         <button
           onClick={onOpenDrawer}
-          className="absolute -top-2 left-4 w-14 h-14 rounded-full bg-card2 flex items-center justify-center text-white shadow-lg"
+          className="md:hidden absolute -top-2 left-4 w-14 h-14 rounded-full bg-card2 flex items-center justify-center text-white shadow-lg"
           aria-label="Buka menu"
         >
           {I.menu}

@@ -67,21 +67,30 @@ export default function App() {
   };
 
   return (
-    <div className="h-full bg-black flex justify-center">
-      <div className="w-full max-w-md h-full bg-black relative overflow-hidden sm:border-x sm:border-white/10">
+    <div className="h-full bg-black md:flex">
+      {/* Sidebar permanen di desktop */}
+      <aside className="hidden md:block w-72 lg:w-80 shrink-0 h-full border-r border-white/10">
+        <Drawer asSidebar open onClose={() => {}} onOpenSheet={(page) => openSheet(page)} />
+      </aside>
+
+      {/* Area chat */}
+      <div className="h-full md:flex-1 md:min-w-0 relative">
         <ChatScreen
           onOpenDrawer={() => setDrawerOpen(true)}
           onOpenMenu={() => openSheet("menu")}
         />
 
-        <Drawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          onOpenSheet={(page) => {
-            setDrawerOpen(false);
-            openSheet(page);
-          }}
-        />
+        {/* Drawer overlay khusus mobile */}
+        <div className="md:hidden">
+          <Drawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            onOpenSheet={(page) => {
+              setDrawerOpen(false);
+              openSheet(page);
+            }}
+          />
+        </div>
 
         {current && (
           <Sheet onClose={closeSheet} labelled={current !== "artefak"}>

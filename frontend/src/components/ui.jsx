@@ -24,14 +24,14 @@ export function MuseAvatar({ size = 64, label = true }) {
   );
 }
 
-/* ---------- Bottom sheet generik ---------- */
+/* ---------- Bottom sheet generik (jadi modal tengah di desktop) ---------- */
 export function Sheet({ children, onClose, labelled = true }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-6">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-card rounded-t-3xl max-h-[88vh] flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-md md:max-w-lg bg-card rounded-t-3xl md:rounded-3xl max-h-[88vh] md:max-h-[85vh] flex flex-col overflow-hidden">
         {labelled && (
-          <div className="pt-3 pb-1 flex justify-center shrink-0">
+          <div className="pt-3 pb-1 flex justify-center shrink-0 md:hidden">
             <div className="w-10 h-1 rounded-full bg-gray-600" />
           </div>
         )}
