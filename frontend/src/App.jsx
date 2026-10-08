@@ -26,7 +26,27 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [stack, setStack] = useState([]); // tumpukan halaman bottom-sheet
   const [view, setView] = useState("chat"); // chat | sasaran | galeri
-  const [chatSide, setChatSide] = useState(false); // sidebar percakapan (desktop)
+  const [chatSide, setChatSide] = useState(false);
+  const [chatPinned, setChatPinned] = useState(() => {
+    try {
+      return localStorage.getItem("cepirit_chat_pinned") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleChatPin = () => {
+    setChatPinned((p) => {
+      const next = !p;
+      try {
+        localStorage.setItem("cepirit_chat_pinned", next ? "1" : "0");
+      } catch {}
+      return next;
+    });
+  };
+  const closeChatSide = () => {
+    if (!chatPinned) setChatSide(false);
+  };
+  const sidebarOpen = chatPinned || chatSide; // sidebar percakapan (desktop)
   const [rightOpen, setRightOpen] = useState(false); // panel kanan (desktop)
   const [goals, setGoals] = useState([]);
   const [artifacts, setArtifacts] = useState([]);
@@ -184,6 +204,8 @@ export default function App() {
             setDrawerOpen(false);
             openSheet(page);
           }}
+          pinned={chatPinned}
+          onTogglePin={toggleChatPin}
         />
       </div>
 
@@ -196,7 +218,7 @@ export default function App() {
             if (view !== "chat") {
               goView("chat");
               setChatSide(true);
-            } else {
+            } else if (!chatPinned) {
               setChatSide((s) => !s);
             }
           }}
@@ -205,13 +227,15 @@ export default function App() {
           onOpenMenu={() => openSheet("menu")}
         />
 
-        {view === "chat" && chatSide && (
+        {view === "chat" && sidebarOpen && (
           <aside className="w-72 lg:w-80 shrink-0 h-full border-r border-white/10">
             <Drawer
               asSidebar
               open
-              onClose={() => setChatSide(false)}
+              onClose={closeChatSide}
               onOpenSheet={(page) => openSheet(page)}
+              pinned={chatPinned}
+              onTogglePin={toggleChatPin}
             />
           </aside>
         )}
