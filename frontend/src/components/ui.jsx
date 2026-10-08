@@ -135,6 +135,15 @@ export function SectionTitle({ children }) {
   return <h3 className="text-gray-400 text-[17px] font-semibold px-5 mt-6 mb-2">{children}</h3>;
 }
 
+/* Ikon garis 3 untuk hamburger atas mobile */
+const MENU_3 = (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="17" x2="20" y2="17" />
+  </svg>
+);
+
 /* ---------- Bar atas mobile (fixed, tidak ikut scroll) ---------- */
 export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
   return (
@@ -144,7 +153,7 @@ export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
         className="w-11 h-11 flex items-center justify-center text-white"
         aria-label="Buka menu"
       >
-        {I.menu}
+        {MENU_3}
       </button>
       {view === "chat" ? (
         <button
@@ -161,15 +170,6 @@ export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
     </div>
   );
 }
-
-/* Ikon garis 3 untuk tombol menu bawah */
-const MENU_3 = (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <line x1="4" y1="7" x2="20" y2="7" />
-    <line x1="4" y1="12" x2="20" y2="12" />
-    <line x1="4" y1="17" x2="20" y2="17" />
-  </svg>
-);
 
 /* ---------- Tab bar bawah (mobile) ---------- */
 const tabCheck = (
@@ -211,7 +211,7 @@ export function MobileTabBar({ view, onView, onOpenMenu }) {
         aria-label="Menu"
         className="relative flex flex-col items-center gap-1 px-5 py-1 text-gray-600"
       >
-        {MENU_3}
+        {I.menu}
       </button>
     </nav>
   );
