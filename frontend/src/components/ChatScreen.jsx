@@ -29,16 +29,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto">
-      {/* Header aplikasi (mobile) */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <CepiritAvatar size={36} label={false} />
-          <div className="flex flex-col leading-tight">
-            <span className="text-white text-[17px] font-semibold">CEPIRIT</span>
-            <span className="text-gray-500 text-[12px]">Cepet Lancar Dan Plong</span>
-          </div>
-        </div>
-        <button onClick={onOpenMenu} className="text-white text-2xl leading-none px-1" aria-label="Menu">⋮</button>
+      {/* Bar atas minimal (mobile) — cuma tombol menu, ala screenshot */}
+      <div className="md:hidden flex justify-end px-2 pt-1 shrink-0">
+        <button onClick={onOpenMenu} className="text-white text-2xl leading-none w-11 h-11 flex items-center justify-center" aria-label="Menu">⋮</button>
       </div>
 
       {/* Header desktop ala muse.ai */}
