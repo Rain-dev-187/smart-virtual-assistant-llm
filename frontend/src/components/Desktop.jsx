@@ -31,7 +31,7 @@ export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenMen
     }`;
   const dot = <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />;
   return (
-    <nav className="w-[68px] shrink-0 h-full border-r border-white/10 flex flex-col items-center py-4 gap-1.5 bg-black">
+    <nav className="w-[68px] shrink-0 h-full border-r border-white/10 flex flex-col items-center py-4 gap-1.5 bg-[#171717]">
       <div className="mb-3">
         <CepiritAvatar size={40} label={false} />
       </div>
@@ -171,7 +171,7 @@ const GALERI_NAV = [
 
 export function GaleriSidebar({ filter, onFilter }) {
   return (
-    <div className="w-full h-full bg-black border-r border-white/10 py-4 overflow-y-auto no-scrollbar">
+    <div className="w-full h-full bg-[#171717] border-r border-white/10 py-4 overflow-y-auto no-scrollbar">
       <div className="px-4 pb-4">
         <div className="flex items-center gap-2 bg-card rounded-full px-4 py-2.5 text-gray-500">
           {I.search}
@@ -251,7 +251,7 @@ export function ProfilCepirit() {
 /* ---------- Panel kanan (desktop, tampilan chat) ---------- */
 export function RightPanel({ onClose }) {
   return (
-    <aside className="hidden xl:flex w-80 shrink-0 h-full border-l border-white/10 flex-col p-6 overflow-y-auto no-scrollbar bg-black">
+    <aside className="hidden xl:flex w-80 shrink-0 h-full border-l border-white/10 flex-col p-6 overflow-y-auto no-scrollbar bg-[#171717]">
       <div className="flex justify-end">
         <button onClick={onClose} className="text-gray-500 hover:text-white text-2xl leading-none" aria-label="Tutup panel">×</button>
       </div>

@@ -158,7 +158,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-full bg-black">
+    <div className="h-full bg-[#171717]">
       {/* ============ MOBILE (<md) ============ */}
       <div className="md:hidden h-full relative flex flex-col">
         <MobileTopBar
