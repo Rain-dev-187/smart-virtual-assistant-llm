@@ -122,12 +122,12 @@ export default function App() {
     }
   };
 
-  // Klik avatar tengah: di layar lebar tampilkan panel kanan,
+  // Klik avatar tengah: di layar lebar buka/tutup panel kanan,
   // di layar kecil (tanpa panel kanan) buka sheet profil
   const openProfile = () => {
     if (window.matchMedia("(min-width: 1280px)").matches) {
       setView("chat");
-      setRightOpen(true);
+      setRightOpen((s) => !s);
     } else {
       openSheet("profil");
     }
