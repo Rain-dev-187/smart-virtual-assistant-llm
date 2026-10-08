@@ -26,7 +26,7 @@ export default function App() {
   const [stack, setStack] = useState([]); // tumpukan halaman bottom-sheet
   const [view, setView] = useState("chat"); // chat | sasaran | galeri
   const [chatSide, setChatSide] = useState(false); // sidebar percakapan (desktop)
-  const [rightOpen, setRightOpen] = useState(true); // panel kanan (desktop)
+  const [rightOpen, setRightOpen] = useState(false); // panel kanan (desktop)
   const [goals, setGoals] = useState([]);
   const [artifacts, setArtifacts] = useState([]);
   const [galeriFilter, setGaleriFilter] = useState("semua");

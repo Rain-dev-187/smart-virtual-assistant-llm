@@ -29,14 +29,21 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto">
-      {/* Avatar tengah — selalu tampil, tidak ikut scroll;
-          sembunyi saat panel kanan terbuka (profil pindah ke sidebar) */}
-      <div
-        key={panelOpen ? "avatar-hidden" : "avatar-shown"}
-        className={`shrink-0 flex justify-center pt-4 ${panelOpen ? "xl:hidden" : ""}`}
-      >
+      {/* Avatar tengah (mobile) — selalu tampil */}
+      <div className="md:hidden shrink-0 flex justify-center pt-4">
         <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full animate-pop-in">
           <CepiritAvatar size={72} />
+        </button>
+      </div>
+
+      {/* Bar atas desktop — avatar kecil di kiri, klik untuk buka/tutup panel profil.
+          Sembunyi saat panel terbuka (profil pindah ke sidebar) */}
+      <div
+        key={panelOpen ? "avatar-hidden" : "avatar-shown"}
+        className={`hidden md:flex shrink-0 items-center px-6 py-3 ${panelOpen ? "xl:hidden" : ""}`}
+      >
+        <button onClick={onOpenProfile} aria-label="Profil CEPIRIT" className="rounded-full animate-pop-in">
+          <CepiritAvatar size={44} label={false} />
         </button>
       </div>
 
