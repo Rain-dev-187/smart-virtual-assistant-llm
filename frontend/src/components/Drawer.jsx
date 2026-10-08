@@ -1,83 +1,143 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { I } from "./ui";
 
 /* ---------- Drawer samping ----------
    asSidebar=true  -> panel statis untuk sidebar desktop (tanpa overlay)
    asSidebar=false -> drawer overlay untuk mobile                            */
-export default function Drawer({ open, onClose, onOpenSheet, onNavigate = () => {}, asSidebar = false }) {
+export default function Drawer({ open, onClose, onOpenSheet, asSidebar = false }) {
   const [page, setPage] = useState("main");
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!open && !asSidebar) setQuery("");
+  }, [open, asSidebar]);
 
   if (!open && !asSidebar) return null;
+
+  const conversations = [
+    {
+      id: "utama",
+      title: "Obrolan utama",
+      preview: "kalo untuk LLM ada harganya gk",
+      time: "baru saja",
+      wa: false,
+      action: () => onClose(),
+    },
+    {
+      id: "wa",
+      title: "WhatsApp",
+      preview: "Kamu Dzikri, mahasiswa yang lagi belajar MSDM...",
+      time: "2 jam yang lalu",
+      wa: true,
+      action: () => onOpenSheet("saluran"),
+    },
+    {
+      id: "selingan",
+      title: "Obrolan selingan",
+      preview: "Atur percakapan berdasarkan topik",
+      time: "",
+      wa: false,
+      action: () => setPage("selingan"),
+    },
+  ];
+
+  const q = query.trim().toLowerCase();
+  const results = q
+    ? conversations.filter((c) => (c.title + " " + c.preview).toLowerCase().includes(q))
+    : [];
 
   const content =
     page === "main" ? (
       <div className="flex-1 overflow-y-auto no-scrollbar py-4">
-        {/* Cari */}
+        {/* Cari obrolan */}
         <div className="px-4 pb-3">
-          <div className="flex items-center gap-2 bg-card2 rounded-full px-4 py-2.5 text-gray-400">
+          <div className="flex items-center gap-2 bg-card2 rounded-full px-4 py-2.5 text-gray-400 focus-within:text-gray-200 transition-colors">
             {I.search}
-            <span className="text-[16px]">Cari</span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Cari"
+              className="flex-1 bg-transparent outline-none text-[16px] placeholder-gray-500 text-white min-w-0"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="text-gray-500 hover:text-white text-xl leading-none shrink-0"
+                aria-label="Hapus pencarian"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full text-left px-5 py-3 text-[17px] text-white bg-card2/60"
-        >
-          Obrolan utama
-        </button>
+        {q ? (
+          /* Hasil pencarian */
+          <div className="px-2">
+            {results.length === 0 ? (
+              <div className="px-3 py-8 text-center text-gray-500 text-[15px]">
+                Tidak ada obrolan yang cocok
+              </div>
+            ) : (
+              results.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={r.action}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-card2/60 text-left transition-colors"
+                >
+                  <span className="w-10 h-10 rounded-full bg-card2 flex items-center justify-center shrink-0 text-gray-300">
+                    {r.wa ? (
+                      <span className="w-6 h-6 rounded-full bg-[#25d366] flex items-center justify-center text-white text-[13px]">◉</span>
+                    ) : (
+                      I.chat
+                    )}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-white text-[16px] font-medium truncate">{r.title}</span>
+                    <span className="block text-gray-500 text-[14px] truncate">{r.preview}</span>
+                  </span>
+                  {r.time ? <span className="text-gray-600 text-[12px] shrink-0">{r.time}</span> : null}
+                </button>
+              ))
+            )}
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={onClose}
+              className="w-full text-left px-5 py-3 text-[17px] text-white bg-card2/60"
+            >
+              Obrolan utama
+            </button>
 
-        {/* Saluran */}
-        <div className="px-5 pt-4 pb-1 flex items-center gap-1 text-gray-400 text-[16px]">
-          Saluran
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </div>
-        <button
-          onClick={() => onOpenSheet("saluran")}
-          className="w-full flex items-center gap-3 px-5 py-3 text-left"
-        >
-          <span className="w-8 h-8 rounded-full bg-[#25d366] flex items-center justify-center text-white text-lg">◉</span>
-          <span className="text-[17px] text-white">WhatsApp</span>
-          <span className="ml-auto w-2.5 h-2.5 rounded-full bg-accent" />
-        </button>
+            {/* Saluran */}
+            <div className="px-5 pt-4 pb-1 flex items-center gap-1 text-gray-400 text-[16px]">
+              Saluran
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            <button
+              onClick={() => onOpenSheet("saluran")}
+              className="w-full flex items-center gap-3 px-5 py-3 text-left"
+            >
+              <span className="w-8 h-8 rounded-full bg-[#25d366] flex items-center justify-center text-white text-lg">◉</span>
+              <span className="text-[17px] text-white">WhatsApp</span>
+              <span className="ml-auto w-2.5 h-2.5 rounded-full bg-accent" />
+            </button>
 
-        {/* Obrolan selingan */}
-        <button
-          onClick={() => setPage("selingan")}
-          className="w-full flex items-center justify-between px-5 py-3 text-left text-gray-300 text-[17px]"
-        >
-          Obrolan selingan
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.2" strokeLinecap="round">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-
-        {/* Jelajah */}
-        <div className="px-5 pt-4 pb-1 text-gray-400 text-[16px]">Jelajah</div>
-        <button
-          onClick={() => onNavigate("sasaran")}
-          className="w-full flex items-center gap-3 px-5 py-3 text-left text-gray-300 text-[17px]"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 11 12 14 22 4" />
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-          </svg>
-          Sasaran
-        </button>
-        <button
-          onClick={() => onNavigate("galeri")}
-          className="w-full flex items-center gap-3 px-5 py-3 text-left text-gray-300 text-[17px]"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="14" width="7" height="7" rx="1.5" />
-            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          </svg>
-          Galeri
-        </button>
+            {/* Obrolan selingan */}
+            <button
+              onClick={() => setPage("selingan")}
+              className="w-full flex items-center justify-between px-5 py-3 text-left text-gray-300 text-[17px]"
+            >
+              Obrolan selingan
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.2" strokeLinecap="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
     ) : (
       <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">

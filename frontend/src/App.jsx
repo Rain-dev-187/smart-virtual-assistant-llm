@@ -184,10 +184,6 @@ export default function App() {
             setDrawerOpen(false);
             openSheet(page);
           }}
-          onNavigate={(v) => {
-            setDrawerOpen(false);
-            goView(v);
-          }}
         />
       </div>
 
@@ -216,7 +212,6 @@ export default function App() {
               open
               onClose={() => setChatSide(false)}
               onOpenSheet={(page) => openSheet(page)}
-              onNavigate={goView}
             />
           </aside>
         )}
