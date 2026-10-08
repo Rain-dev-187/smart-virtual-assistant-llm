@@ -136,7 +136,7 @@ export function SectionTitle({ children }) {
 }
 
 /* ---------- Bar atas mobile (overlay transparan) ---------- */
-export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile }) {
+export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile, view }) {
   return (
     <div className="md:hidden absolute top-0 inset-x-0 z-20 flex items-center justify-between px-2 pt-1">
       <button
@@ -146,13 +146,17 @@ export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile }) {
       >
         {I.menu}
       </button>
-      <button
-        onClick={onOpenProfile}
-        className="rounded-full animate-pop-in"
-        aria-label="Lihat profil CEPIRIT"
-      >
-        <CepiritAvatar size={38} label={false} />
-      </button>
+      {view === "chat" ? (
+        <button
+          onClick={onOpenProfile}
+          className="rounded-full animate-pop-in"
+          aria-label="Lihat profil CEPIRIT"
+        >
+          <CepiritAvatar size={38} label={false} />
+        </button>
+      ) : (
+        <div className="w-[38px] shrink-0" />
+      )}
       <button
         onClick={onOpenMenu}
         className="w-11 h-11 flex items-center justify-center text-white text-2xl leading-none"

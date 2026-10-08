@@ -165,6 +165,7 @@ export default function App() {
           onOpenDrawer={() => setDrawerOpen(true)}
           onOpenMenu={() => openSheet("menu")}
           onOpenProfile={openProfile}
+          view={view}
         />
         <div className="flex-1 min-h-0 relative">{mainView}</div>
         <MobileTabBar view={view} onView={goView} onOpenMenu={() => openSheet("menu")} />
