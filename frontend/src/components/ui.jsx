@@ -152,10 +152,10 @@ export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile, view }) 
           className="rounded-full animate-pop-in"
           aria-label="Lihat profil CEPIRIT"
         >
-          <CepiritAvatar size={38} label={false} />
+          <CepiritAvatar size={46} label={false} />
         </button>
       ) : (
-        <div className="w-[38px] shrink-0" />
+        <div className="w-[46px] shrink-0" />
       )}
       <button
         onClick={onOpenMenu}
