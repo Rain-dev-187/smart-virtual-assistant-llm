@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { SheetHeader, Toggle } from "./ui";
 
-export default function KontrolData({ onBack }) {
+export default function KontrolData({ onBack, bare = false }) {
   const [bantu, setBantu] = useState(true);
 
   return (
     <div>
-      <SheetHeader title="Kontrol data" onBack={onBack} />
+      {!bare && <SheetHeader title="Kontrol data" onBack={onBack} />}
 
       <div className="mx-4 mt-2 bg-card2 rounded-3xl p-5 flex gap-4">
         <span className="text-gray-300 text-2xl shrink-0">🛡</span>

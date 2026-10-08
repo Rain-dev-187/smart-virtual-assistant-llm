@@ -11,13 +11,13 @@ const THEMES = [
   { name: "Hijau", bg: "#30d158" },
 ];
 
-export default function Umum({ onBack }) {
+export default function Umum({ onBack, bare = false }) {
   const [mode, setMode] = useState("otomatis");
   const [theme, setTheme] = useState(0);
 
   return (
     <div>
-      <SheetHeader title="Umum" onBack={onBack} />
+      {!bare && <SheetHeader title="Umum" onBack={onBack} />}
 
       {/* Akun Meta */}
       <div className="mx-4 mt-2 bg-card2 rounded-3xl p-4 flex items-center gap-3">

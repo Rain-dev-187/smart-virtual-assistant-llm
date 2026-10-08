@@ -48,7 +48,7 @@ const SECTIONS = [
   },
 ];
 
-export default function Konektor({ onBack }) {
+export default function Konektor({ onBack, bare = false }) {
   const [tab, setTab] = useState("available");
   const [connected, setConnected] = useState(["WhatsApp"]);
 
@@ -57,7 +57,7 @@ export default function Konektor({ onBack }) {
 
   return (
     <div>
-      <SheetHeader title="Konektor" onBack={onBack} />
+      {!bare && <SheetHeader title="Konektor" onBack={onBack} />}
 
       {/* Tab */}
       <div className="mx-4 mt-1 bg-card2 rounded-full p-1.5 flex">

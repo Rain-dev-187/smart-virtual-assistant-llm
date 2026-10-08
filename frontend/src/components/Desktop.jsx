@@ -24,7 +24,7 @@ const J = {
 };
 
 /* ---------- Rel ikon kiri (desktop) ---------- */
-export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenSettings, onOpenMenu }) {
+export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenMenu }) {
   const btn = (active) =>
     `relative w-11 h-11 rounded-2xl flex items-center justify-center transition-colors ${
       active ? "bg-card2 text-white" : "text-gray-500 hover:text-gray-200 hover:bg-card"
@@ -51,9 +51,6 @@ export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenSet
         {view === "galeri" && dot}
       </button>
       <div className="flex-1" />
-      <button className={btn(false)} onClick={onOpenSettings} title="Pengaturan">
-        {I.gear}
-      </button>
       <button className={btn(false)} onClick={onOpenMenu} title="Menu">
         {I.menu}
       </button>

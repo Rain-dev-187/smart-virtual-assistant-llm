@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import ChatScreen from "./components/ChatScreen";
 import Drawer from "./components/Drawer";
-import { MenuSheet, SettingsSheet } from "./components/SettingsMenu";
-import Umum from "./components/Umum";
-import Konektor from "./components/Konektor";
-import Izin from "./components/Izin";
-import KontrolData from "./components/KontrolData";
-import { Dompet, Saluran, Bantuan, InfoHukum, Artefak, Perangkat } from "./components/SmallScreens";
+import { MenuSheet } from "./components/SettingsMenu";
+import SettingsModal from "./components/SettingsModal";
+import { Artefak } from "./components/SmallScreens";
 import { Sheet, MobileTopBar, MobileTabBar } from "./components/ui";
 import {
   IconRail,
@@ -53,6 +50,7 @@ export default function App() {
   const [galeriFilter, setGaleriFilter] = useState("semua");
   const [pendingKategori, setPendingKategori] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const openSheet = (page) => setStack((s) => [...s, page]);
   const back = () => setStack((s) => s.slice(0, -1));
@@ -88,43 +86,15 @@ export default function App() {
     const props = { onBack: back, onClose: closeSheet };
     switch (current) {
       case "menu":
-        return <MenuSheet onClose={closeSheet} onOpenSettings={() => setStack(["settings"])} />;
-      case "settings":
         return (
-          <SettingsSheet
-            onBack={back}
-            onOpen={(key) => openSheet(key)}
-            onLogout={() => {
+          <MenuSheet
+            onClose={closeSheet}
+            onOpenSettings={() => {
               closeSheet();
-              alert("Anda telah logout (demo).");
+              setSettingsOpen(true);
             }}
           />
         );
-      case "umum":
-        return <Umum {...props} />;
-      case "konektor":
-        return <Konektor {...props} />;
-      case "dompet":
-        return <Dompet {...props} />;
-      case "kredensial":
-        return (
-          <div className="p-5">
-            <div className="text-xl font-semibold mb-2">Penyimpanan kredensial aman</div>
-            <p className="text-gray-400 text-[15px]">Kredensial Anda disimpan terenkripsi di brankas aman perangkat ini.</p>
-          </div>
-        );
-      case "izin":
-        return <Izin {...props} />;
-      case "saluran":
-        return <Saluran {...props} />;
-      case "perangkat":
-        return <Perangkat {...props} />;
-      case "kontroldata":
-        return <KontrolData {...props} />;
-      case "bantuan":
-        return <Bantuan {...props} />;
-      case "infohukum":
-        return <InfoHukum {...props} />;
       case "artefak":
         return <Artefak {...props} />;
       case "sasaran-form":
@@ -223,7 +193,6 @@ export default function App() {
             }
           }}
           onOpenSearch={() => setSearchOpen(true)}
-          onOpenSettings={() => openSheet("settings")}
           onOpenMenu={() => openSheet("menu")}
         />
 
@@ -250,6 +219,17 @@ export default function App() {
 
         {view === "chat" && rightOpen && <RightPanel onClose={() => setRightOpen(false)} />}
       </div>
+
+      {/* Modal pengaturan 2 kolom */}
+      {settingsOpen && (
+        <SettingsModal
+          onClose={() => setSettingsOpen(false)}
+          onLogout={() => {
+            setSettingsOpen(false);
+            alert("Anda telah logout (demo).");
+          }}
+        />
+      )}
 
       {/* Modal pencarian */}
       {searchOpen && (

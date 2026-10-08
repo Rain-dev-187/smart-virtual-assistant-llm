@@ -13,7 +13,7 @@ function Choice({ title, desc, selected, onSelect }) {
   );
 }
 
-export default function Izin({ onBack }) {
+export default function Izin({ onBack, bare = false }) {
   const [tindakan, setTindakan] = useState("sebagian");
   const [web, setWeb] = useState("sebagian");
   const [proxy, setProxy] = useState(false);
@@ -31,7 +31,7 @@ export default function Izin({ onBack }) {
 
   return (
     <div>
-      <SheetHeader title="Izin" onBack={onBack} />
+      {!bare && <SheetHeader title="Izin" onBack={onBack} />}
 
       <div className="mx-4 mt-1 bg-card2 rounded-3xl px-5 py-2 divide-y divide-white/5">
         <Choice
