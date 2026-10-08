@@ -200,15 +200,71 @@ export function GaleriSidebar({ filter, onFilter }) {
 }
 
 /* ---------- Konten profil CEPIRIT (dipakai panel kanan & sheet profil) ---------- */
+/* ---------- Ikon tambahan untuk panel profil ---------- */
+const CLOCK_ICON = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="12 7 12 12 15.5 14" />
+  </svg>
+);
+const FINGERPRINT_ICON = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+    <path d="M12 11a3 3 0 0 0-3 3c0 2.5-.5 4.5-1.5 6" />
+    <path d="M12 11a3 3 0 0 1 3 3c0 3-1 5.5-2.5 7" />
+    <path d="M12 8a6 6 0 0 0-6 6c0 1.8-.3 3.3-.8 4.7" />
+    <path d="M12 8a6 6 0 0 1 6 6c0 2.2-.4 4.1-1.2 5.7" />
+    <path d="M12 5a9 9 0 0 0-9 9c0 1.2-.1 2.3-.3 3.4" />
+    <path d="M12 5a9 9 0 0 1 9 9c0 1.5-.2 2.9-.5 4.2" />
+  </svg>
+);
+const GITHUB_ICON = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.35 1.08 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.1.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85V21c0 .27.18.58.69.48A10 10 0 0 0 12 2z" />
+  </svg>
+);
+const CHECK_CIRCLE = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="8.5 12.5 11 15 15.5 9.5" />
+  </svg>
+);
+
+/* ---------- Data demo panel profil ---------- */
+const HARI_INI = [
+  { judul: "Perbesar Avatar Mobile", desc: "Avatar mobile diperbesar jadi 56px", waktu: "3:36 pm" },
+  { judul: "Ubah Warna Background", desc: "Diubah ke abu-abu gelap #171717", waktu: "3:33 pm" },
+  { judul: "Avatar Mobile", desc: "Avatar dipindah ke bar atas mobile", waktu: "3:15 pm" },
+];
+const RIWAYAT = [
+  {
+    judul: "Perform this action on your GitHub account",
+    desc: "Muse ingin memperbesar lagi ukuran avatar CEPIRIT untuk tampilan mobile.",
+    waktu: "Diizinkan • 3 menit yang lalu",
+  },
+  {
+    judul: "Perform this action on your GitHub account",
+    desc: "Muse ingin mengubah warna latar belakang menjadi abu-abu gelap.",
+    waktu: "Diizinkan • 5 menit yang lalu",
+  },
+];
+
+/* ---------- Isi profil CEPIRIT (panel kanan) ---------- */
 export function ProfilCepirit() {
   const [tab, setTab] = useState(0);
-  const tabs = [I.menu, I.shield, I.chat, I.lock];
+  const tabs = [
+    { icon: I.menu, label: "Hari ini" },
+    { icon: I.shield, label: "Persetujuan" },
+    { icon: CLOCK_ICON, label: "Harian" },
+    { icon: FINGERPRINT_ICON, label: "Profil" },
+  ];
+
   return (
     <div className="flex flex-col">
+      {/* Header profil */}
       <div className="flex flex-col items-center">
         <div className="relative">
           <CepiritAvatar size={96} label={false} />
-          <span className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-card2 border-2 border-black flex items-center justify-center text-gray-300">
+          <span className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-card2 border-2 border-[#171717] flex items-center justify-center text-gray-300">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
             </svg>
@@ -219,31 +275,100 @@ export function ProfilCepirit() {
           <span className="w-2 h-2 rounded-full bg-green-500" />
           Terhubung
         </div>
-        <div className="text-gray-600 text-[12px] mt-1">Cepet Lancar Dan Plong</div>
       </div>
+
+      {/* Tab ikon */}
       <div className="flex gap-1 mt-6 bg-card rounded-full p-1">
-        {tabs.map((ic, i) => (
+        {tabs.map((t, i) => (
           <button
             key={i}
             onClick={() => setTab(i)}
+            title={t.label}
             className={`flex-1 h-9 rounded-full flex items-center justify-center transition-colors ${
               tab === i ? "bg-card2 text-white" : "text-gray-500 hover:text-gray-300"
             }`}
           >
-            {ic}
+            {t.icon}
           </button>
         ))}
       </div>
-      <h3 className="text-[17px] font-semibold mt-6 mb-3">Harian</h3>
-      <div className="flex items-center gap-3 bg-card rounded-2xl px-4 py-3.5">
-        <span className="w-10 h-10 rounded-full bg-card2 flex items-center justify-center text-red-400 shrink-0">
-          {J.heart}
-        </span>
+
+      {/* Tab: Hari ini */}
+      {tab === 0 && (
         <div>
-          <div className="font-medium text-[15px]">Heartbeat</div>
-          <div className="text-gray-500 text-[13px]">Setiap 30 menit</div>
+          <h3 className="text-[17px] font-semibold mt-6 mb-3">Hari ini</h3>
+          <div className="space-y-1">
+            {HARI_INI.map((a, i) => (
+              <div key={i} className="flex items-start gap-3 px-2 py-3 rounded-2xl hover:bg-card/60">
+                <span className="text-gray-400 shrink-0 mt-0.5">{CHECK_CIRCLE}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-[15px] text-white">{a.judul}</div>
+                  <div className="text-gray-500 text-[13px] leading-snug mt-0.5">{a.desc}</div>
+                  <div className="text-gray-600 text-[12px] mt-1">{a.waktu}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Tab: Riwayat persetujuan */}
+      {tab === 1 && (
+        <div>
+          <h3 className="text-[17px] font-semibold mt-6 mb-3">Riwayat persetujuan</h3>
+          <div className="space-y-1">
+            {RIWAYAT.map((r, i) => (
+              <div key={i} className="flex items-start gap-3 px-2 py-3 rounded-2xl hover:bg-card/60">
+                <span className="text-gray-300 shrink-0 mt-0.5">{GITHUB_ICON}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-[15px] text-white leading-snug">{r.judul}</div>
+                  <div className="text-gray-500 text-[13px] leading-snug mt-1">{r.desc}</div>
+                  <div className="text-gray-600 text-[12px] mt-1">{r.waktu}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Harian */}
+      {tab === 2 && (
+        <div>
+          <h3 className="text-[17px] font-semibold mt-6 mb-3">Harian</h3>
+          <div className="flex items-center gap-3 bg-card rounded-2xl px-4 py-3.5">
+            <span className="w-10 h-10 rounded-full bg-card2 flex items-center justify-center text-red-400 shrink-0">
+              {J.heart}
+            </span>
+            <div>
+              <div className="font-medium text-[15px]">Heartbeat</div>
+              <div className="text-gray-500 text-[13px]">Setiap 30 menit</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Profil */}
+      {tab === 3 && (
+        <div>
+          <h3 className="text-[17px] font-semibold mt-6 mb-3">CEPIRIT</h3>
+          <button className="w-full bg-card hover:bg-card2 rounded-full py-2.5 text-[15px] text-white flex items-center justify-center gap-2 transition-colors">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
+            </svg>
+            Edit
+          </button>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <div className="rounded-2xl p-4 bg-gradient-to-b from-[#ff5a5a] to-[#c81e1e] min-h-[110px] flex flex-col justify-between">
+              <div className="font-bold text-[15px] text-white tracking-wide">SOUL</div>
+              <div className="text-[11px] text-white/90 leading-tight">AKSES DENGAN HATI-HATI</div>
+            </div>
+            <div className="rounded-2xl p-4 bg-gradient-to-b from-[#4a7bff] to-[#1e3ac8] min-h-[110px] flex flex-col justify-between">
+              <div className="font-bold text-[15px] text-white tracking-wide">MEMORI</div>
+              <div className="text-[11px] text-white/90 leading-tight">AKSES DENGAN HATI-HATI</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
