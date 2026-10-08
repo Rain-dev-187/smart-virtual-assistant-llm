@@ -197,8 +197,12 @@ export default function App() {
           view={view}
           onView={goView}
           onOpenChatSide={() => {
-            goView("chat");
-            setChatSide(true);
+            if (view !== "chat") {
+              goView("chat");
+              setChatSide(true);
+            } else {
+              setChatSide((s) => !s);
+            }
           }}
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => openSheet("settings")}

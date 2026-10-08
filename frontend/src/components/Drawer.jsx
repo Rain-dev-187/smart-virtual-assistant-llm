@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { I, CepiritAvatar } from "./ui";
+import { I } from "./ui";
 
 /* ---------- Drawer samping ----------
    asSidebar=true  -> panel statis untuk sidebar desktop (tanpa overlay)
@@ -104,13 +104,6 @@ export default function Drawer({ open, onClose, onOpenSheet, onNavigate = () => 
   if (asSidebar) {
     return (
       <div className="w-full h-full bg-card flex flex-col overflow-hidden">
-        <div className="px-5 pt-5 pb-2 flex items-center gap-2.5 shrink-0">
-          <CepiritAvatar size={34} label={false} />
-          <div className="flex flex-col leading-tight">
-            <span className="text-white font-semibold text-[17px]">CEPIRIT</span>
-            <span className="text-gray-500 text-[12px]">Cepet Lancar Dan Plong</span>
-          </div>
-        </div>
         {content}
       </div>
     );
