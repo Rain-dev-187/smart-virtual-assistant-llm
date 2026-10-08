@@ -47,19 +47,19 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         </div>
       </div>
 
-      {/* Area chat */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4 relative">
-        {/* Avatar tengah — sembunyi saat panel kanan terbuka (profil pindah ke sidebar),
-            muncul lagi dengan animasi pop-up saat panel ditutup */}
-        <div
-          key={panelOpen ? "avatar-hidden" : "avatar-shown"}
-          className={`flex justify-center ${panelOpen ? "xl:hidden" : ""}`}
-        >
-          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full animate-pop-in">
-            <CepiritAvatar size={72} />
-          </button>
-        </div>
+      {/* Avatar tengah — selalu tampil, tidak ikut scroll;
+          sembunyi saat panel kanan terbuka (profil pindah ke sidebar) */}
+      <div
+        key={panelOpen ? "avatar-hidden" : "avatar-shown"}
+        className={`shrink-0 flex justify-center pt-4 ${panelOpen ? "xl:hidden" : ""}`}
+      >
+        <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full animate-pop-in">
+          <CepiritAvatar size={72} />
+        </button>
+      </div>
 
+      {/* Area chat */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
         <div className="flex justify-end">
           <div className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap">
             {INITIAL[0].text}
