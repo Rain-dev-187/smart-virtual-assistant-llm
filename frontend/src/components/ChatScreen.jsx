@@ -81,7 +81,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   /* 3 tombol aksi di sebelah bubble sendiri */
   const TombolAksi = ({ idx }) => (
-    <div className="flex flex-col gap-1 mr-1 shrink-0">
+    <div className="flex flex-col gap-1 ml-1 shrink-0">
       <button
         onClick={() => aksiBalas(idx)}
         title="Balas"
@@ -125,13 +125,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-4 md:pb-4 space-y-4" onClick={() => setMenu(null)}>
         <div className="flex justify-end">
           <div className="flex items-center gap-1">
-            <TombolAksi idx={0} />
             <div
               {...bubbleProps(0)}
               className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[75%] md:max-w-[95%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
             >
               {INITIAL[0].text}
             </div>
+            <TombolAksi idx={0} />
           </div>
         </div>
 
@@ -139,13 +139,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           m.role === "user" ? (
             <div key={i} className="flex justify-end">
               <div className="flex items-center gap-1">
-                <TombolAksi idx={i + 1} />
                 <div
                   {...bubbleProps(i + 1)}
                   className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[75%] md:max-w-[95%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                 >
                   {m.text}
                 </div>
+                <TombolAksi idx={i + 1} />
               </div>
             </div>
           ) : (
