@@ -43,7 +43,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
         {/* Bayangan tipis transparan di batas atas */}
-        <div className="sticky top-0 z-10 -mx-4 -mt-4 -mb-8 h-8 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
+        <div className="sticky top-0 z-10 -mx-4 -mt-4 -mb-4 h-4 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
         <div className="flex justify-end">
           <div className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap">
             {INITIAL[0].text}

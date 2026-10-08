@@ -6,7 +6,7 @@ export function CepiritAvatar({ size = 64, label = true }) {
     <div className="flex flex-col items-center">
       <div
         className="rounded-full overflow-hidden shrink-0"
-        style={{ width: size, height: size, background: "#262633" }}
+        style={{ width: size, height: size, background: "transparent" }}
       >
         <svg viewBox="0 0 96 96" width={size} height={size}>
           {/* bayangan bawah */}
