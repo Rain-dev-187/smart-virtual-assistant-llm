@@ -109,6 +109,67 @@ export function SectionTitle({ children }) {
   return <h3 className="text-gray-400 text-[17px] font-semibold px-5 mt-6 mb-2">{children}</h3>;
 }
 
+/* ---------- Bar atas mobile ---------- */
+export function MobileTopBar({ onOpenDrawer, onOpenMenu }) {
+  return (
+    <div className="md:hidden flex items-center justify-between px-2 pt-1 shrink-0">
+      <button
+        onClick={onOpenDrawer}
+        className="w-11 h-11 flex items-center justify-center text-white"
+        aria-label="Buka menu"
+      >
+        {I.menu}
+      </button>
+      <button
+        onClick={onOpenMenu}
+        className="w-11 h-11 flex items-center justify-center text-white text-2xl leading-none"
+        aria-label="Menu"
+      >
+        ⋮
+      </button>
+    </div>
+  );
+}
+
+/* ---------- Tab bar bawah (mobile) ---------- */
+const tabCheck = (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 11 12 14 22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
+
+export function MobileTabBar({ view, onView }) {
+  const tabs = [
+    { key: "chat", label: "Obrolan", icon: I.chat },
+    { key: "sasaran", label: "Sasaran", icon: tabCheck },
+    { key: "galeri", label: "Galeri", icon: I.plug },
+  ];
+  return (
+    <nav
+      className="md:hidden shrink-0 border-t border-white/10 bg-black flex justify-around px-8 pt-2"
+      style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+    >
+      {tabs.map((t) => {
+        const active = view === t.key;
+        return (
+          <button
+            key={t.key}
+            onClick={() => onView(t.key)}
+            aria-label={t.label}
+            className={`relative flex flex-col items-center gap-1 px-5 py-1 ${
+              active ? "text-white" : "text-gray-600"
+            }`}
+          >
+            {t.icon}
+            {active && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 /* ---------- Ikon-ikon SVG kecil ---------- */
 const p = { fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
 export const I = {

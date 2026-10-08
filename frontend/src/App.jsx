@@ -7,7 +7,7 @@ import Konektor from "./components/Konektor";
 import Izin from "./components/Izin";
 import KontrolData from "./components/KontrolData";
 import { Dompet, Saluran, Bantuan, InfoHukum, Artefak, Perangkat } from "./components/SmallScreens";
-import { Sheet } from "./components/ui";
+import { Sheet, MobileTopBar, MobileTabBar } from "./components/ui";
 import {
   IconRail,
   GaleriSidebar,
@@ -168,8 +168,13 @@ export default function App() {
   return (
     <div className="h-full bg-black">
       {/* ============ MOBILE (<md) ============ */}
-      <div className="md:hidden h-full relative">
-        {mainView}
+      <div className="md:hidden h-full relative flex flex-col">
+        <MobileTopBar
+          onOpenDrawer={() => setDrawerOpen(true)}
+          onOpenMenu={() => openSheet("menu")}
+        />
+        <div className="flex-1 min-h-0 relative">{mainView}</div>
+        <MobileTabBar view={view} onView={goView} />
         <Drawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}

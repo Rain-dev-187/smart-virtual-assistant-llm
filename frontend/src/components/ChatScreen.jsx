@@ -29,11 +29,6 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto">
-      {/* Bar atas minimal (mobile) — cuma tombol menu, ala screenshot */}
-      <div className="md:hidden flex justify-end px-2 pt-1 shrink-0">
-        <button onClick={onOpenMenu} className="text-white text-2xl leading-none w-11 h-11 flex items-center justify-center" aria-label="Menu">⋮</button>
-      </div>
-
       {/* Header desktop ala muse.ai */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 shrink-0">
         <button
@@ -90,14 +85,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 px-4 pb-5 pt-2 relative">
-        <button
-          onClick={onOpenDrawer}
-          className="md:hidden absolute -top-2 left-4 w-14 h-14 rounded-full bg-card2 flex items-center justify-center text-white shadow-lg"
-          aria-label="Buka menu"
-        >
-          {I.menu}
-        </button>
+      <div className="shrink-0 px-4 pb-3 pt-2">
         <div className="flex items-center gap-2 bg-card rounded-full pl-5 pr-2 py-2">
           <input
             value={draft}
