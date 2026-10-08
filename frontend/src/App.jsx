@@ -122,6 +122,17 @@ export default function App() {
     }
   };
 
+  // Klik avatar tengah: di layar lebar tampilkan panel kanan,
+  // di layar kecil (tanpa panel kanan) buka sheet profil
+  const openProfile = () => {
+    if (window.matchMedia("(min-width: 1280px)").matches) {
+      setView("chat");
+      setRightOpen(true);
+    } else {
+      openSheet("profil");
+    }
+  };
+
   const mainView =
     view === "chat" ? (
       <ChatScreen
@@ -151,17 +162,6 @@ export default function App() {
   const goView = (v) => {
     setView(v);
     if (v !== "galeri") setGaleriFilter("semua");
-  };
-
-  // Klik avatar tengah: di layar lebar tampilkan panel kanan,
-  // di layar kecil (tanpa panel kanan) buka sheet profil
-  const openProfile = () => {
-    if (window.matchMedia("(min-width: 1280px)").matches) {
-      setView("chat");
-      setRightOpen(true);
-    } else {
-      openSheet("profil");
-    }
   };
 
   return (
