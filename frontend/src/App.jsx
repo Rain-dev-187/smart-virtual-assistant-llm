@@ -13,6 +13,7 @@ import {
   GaleriSidebar,
   RightPanel,
   ProfilCepirit,
+  SearchModal,
   SasaranPage,
   GaleriPage,
   SasaranForm,
@@ -31,6 +32,7 @@ export default function App() {
   const [artifacts, setArtifacts] = useState([]);
   const [galeriFilter, setGaleriFilter] = useState("semua");
   const [pendingKategori, setPendingKategori] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const openSheet = (page) => setStack((s) => [...s, page]);
   const back = () => setStack((s) => s.slice(0, -1));
@@ -194,10 +196,11 @@ export default function App() {
         <IconRail
           view={view}
           onView={goView}
-          onToggleChatSide={() => {
-            if (view !== "chat") setView("chat");
-            setChatSide((s) => !s);
+          onOpenChatSide={() => {
+            goView("chat");
+            setChatSide(true);
           }}
+          onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => openSheet("settings")}
           onOpenMenu={() => openSheet("menu")}
         />
@@ -224,6 +227,17 @@ export default function App() {
 
         {view === "chat" && rightOpen && <RightPanel onClose={() => setRightOpen(false)} />}
       </div>
+
+      {/* Modal pencarian */}
+      {searchOpen && (
+        <SearchModal
+          onClose={() => setSearchOpen(false)}
+          onSelect={() => {
+            setSearchOpen(false);
+            goView("chat");
+          }}
+        />
+      )}
 
       {/* Sheet / modal untuk kedua mode */}
       {current && (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { I, CepiritAvatar, SheetHeader } from "./ui";
 import Drawer from "./Drawer";
 
@@ -24,7 +24,7 @@ const J = {
 };
 
 /* ---------- Rel ikon kiri (desktop) ---------- */
-export function IconRail({ view, onView, onToggleChatSide, onOpenSettings, onOpenMenu }) {
+export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenSettings, onOpenMenu }) {
   const btn = (active) =>
     `relative w-11 h-11 rounded-2xl flex items-center justify-center transition-colors ${
       active ? "bg-card2 text-white" : "text-gray-500 hover:text-gray-200 hover:bg-card"
@@ -35,11 +35,11 @@ export function IconRail({ view, onView, onToggleChatSide, onOpenSettings, onOpe
       <div className="mb-3">
         <CepiritAvatar size={40} label={false} />
       </div>
-      <button className={btn(view === "chat")} onClick={() => onView("chat")} title="Obrolan">
+      <button className={btn(view === "chat")} onClick={() => { onView("chat"); onOpenChatSide(); }} title="Obrolan">
         {I.chat}
         {view === "chat" && dot}
       </button>
-      <button className={btn(false)} onClick={onToggleChatSide} title="Cari percakapan">
+      <button className={btn(false)} onClick={onOpenSearch} title="Cari">
         {I.search}
       </button>
       <button className={btn(view === "sasaran")} onClick={() => onView("sasaran")} title="Sasaran">
@@ -58,6 +58,84 @@ export function IconRail({ view, onView, onToggleChatSide, onOpenSettings, onOpe
         {I.menu}
       </button>
     </nav>
+  );
+}
+
+/* ---------- Modal pencarian ala spotlight (desktop) ---------- */
+const SEARCH_RECENTS = [
+  {
+    id: 1,
+    kind: "chat",
+    title: "Obrolan utama",
+    preview: "balikin cepirit ke tengah, header nya ubah jadi shadow aja",
+    time: "baru saja",
+  },
+  {
+    id: 2,
+    kind: "wa",
+    title: "WhatsApp",
+    preview: "Kamu Dzikri, mahasiswa yang lagi belajar MSDM (Manajemen Su...",
+    time: "2 jam yang lalu",
+  },
+];
+
+export function SearchModal({ onClose, onSelect }) {
+  const [q, setQ] = useState("");
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+
+  const filtered = SEARCH_RECENTS.filter((r) =>
+    (r.title + " " + r.preview).toLowerCase().includes(q.toLowerCase())
+  );
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-24">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-card rounded-3xl overflow-hidden shadow-2xl animate-pop-in">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
+          <span className="text-gray-400">{I.search}</span>
+          <input
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari"
+            className="flex-1 bg-transparent outline-none text-[17px] placeholder-gray-500 text-white"
+          />
+        </div>
+        <div className="p-3 max-h-[60vh] overflow-y-auto no-scrollbar">
+          <div className="px-3 py-2 text-gray-500 text-[14px]">Terbaru</div>
+          {filtered.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => onSelect(r)}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-card2 text-left transition-colors"
+            >
+              <span className="w-10 h-10 rounded-full bg-card2 flex items-center justify-center shrink-0 text-gray-300">
+                {r.kind === "chat" ? (
+                  I.chat
+                ) : (
+                  <span className="w-6 h-6 rounded-full bg-[#25d366] flex items-center justify-center text-white text-[13px]">◉</span>
+                )}
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-medium text-[16px] text-white">{r.title}</span>
+                <span className="block text-gray-500 text-[14px] truncate">{r.preview}</span>
+              </span>
+              <span className="text-gray-600 text-[12px] shrink-0">{r.time}</span>
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <div className="px-3 py-6 text-center text-gray-500 text-[15px]">Tidak ada hasil</div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
