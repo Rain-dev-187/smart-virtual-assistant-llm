@@ -1,7 +1,7 @@
 import React from "react";
 
-/* ---------- Avatar bundar "Muse" ---------- */
-export function MuseAvatar({ size = 64, label = true }) {
+/* ---------- Avatar bundar "CEPIRIT" ---------- */
+export function CepiritAvatar({ size = 64, label = true }) {
   return (
     <div className="flex flex-col items-center">
       <div
@@ -17,7 +17,7 @@ export function MuseAvatar({ size = 64, label = true }) {
       </div>
       {label && (
         <div className="mt-1 bg-card2 text-white text-sm font-medium px-4 py-1 rounded-full">
-          Muse
+          CEPIRIT
         </div>
       )}
     </div>

@@ -24,7 +24,7 @@ export default function KontrolData({ onBack }) {
         <Toggle checked={bantu} onChange={setBantu} />
       </div>
       <p className="px-5 mt-2 text-gray-400 text-[14px] leading-relaxed">
-        Izinkan kami menggunakan interaksi Anda dengan Muse untuk mengembangkan dan menyempurnakan AI di Meta.
+        Izinkan kami menggunakan interaksi Anda dengan CEPIRIT untuk mengembangkan dan menyempurnakan AI di Meta.
       </p>
 
       <div className="mx-4 mt-4 bg-card2 rounded-3xl divide-y divide-white/5">
@@ -43,10 +43,10 @@ export default function KontrolData({ onBack }) {
       </div>
 
       <div className="mx-4 mt-4 bg-card2 rounded-3xl p-5">
-        <button className="text-danger text-[17px]">Atur ulang Muse</button>
+        <button className="text-danger text-[17px]">Atur ulang CEPIRIT</button>
       </div>
       <p className="px-5 mt-2 text-gray-400 text-[14px] leading-relaxed">
-        Menghapus data Muse Anda secara permanen, termasuk riwayat obrolan, file, dan tugas aktif.
+        Menghapus data CEPIRIT Anda secara permanen, termasuk riwayat obrolan, file, dan tugas aktif.
       </p>
     </div>
   );

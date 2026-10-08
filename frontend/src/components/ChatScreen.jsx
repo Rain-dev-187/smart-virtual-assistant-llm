@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MuseAvatar, I } from "./ui";
+import { CepiritAvatar, I } from "./ui";
 
 const INITIAL = [
   { role: "user", text: "kalo untuk LLM ada harganya gk" },
@@ -32,8 +32,11 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
       {/* Header aplikasi */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0">
         <div className="flex items-center gap-2.5">
-          <MuseAvatar size={36} />
-          <span className="text-white text-[17px] font-semibold">Muse</span>
+          <CepiritAvatar size={36} label={false} />
+          <div className="flex flex-col leading-tight">
+            <span className="text-white text-[17px] font-semibold">CEPIRIT</span>
+            <span className="text-gray-500 text-[12px]">Cepet Lancar Dan Plong</span>
+          </div>
         </div>
         <button onClick={onOpenMenu} className="text-white text-2xl leading-none px-1" aria-label="Menu">⋮</button>
       </div>
@@ -41,7 +44,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu }) {
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4 relative">
         <div className="flex justify-center">
-          <MuseAvatar size={72} />
+          <CepiritAvatar size={72} />
         </div>
 
         <div className="flex justify-end">

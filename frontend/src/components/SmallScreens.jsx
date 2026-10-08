@@ -11,7 +11,7 @@ export function Dompet({ onBack }) {
     <div>
       <SheetHeader title="Dompet" onBack={onBack} />
       <p className="px-5 mt-1 text-[17px] leading-relaxed">
-        Tambahkan metode pembayaran untuk mengizinkan Muse melakukan pembelian dan transaksi yang aman untuk Anda.
+        Tambahkan metode pembayaran untuk mengizinkan CEPIRIT melakukan pembelian dan transaksi yang aman untuk Anda.
       </p>
       <SectionTitle>Metode pembayaran</SectionTitle>
       <div className="mx-4 bg-card2 rounded-3xl divide-y divide-white/5">
@@ -49,7 +49,7 @@ export function Saluran({ onBack }) {
 
 /* ---------- Bantuan & dukungan ---------- */
 export function Bantuan({ onBack }) {
-  const rows = ["Pusat Bantuan Muse", "Kirimkan masukan"];
+  const rows = ["Pusat Bantuan CEPIRIT", "Kirimkan masukan"];
   return (
     <div>
       <SheetHeader title="Bantuan & dukungan" onBack={onBack} />
@@ -72,8 +72,8 @@ export function Bantuan({ onBack }) {
 /* ---------- Info hukum ---------- */
 export function InfoHukum({ onBack }) {
   const docs = [
-    "Kebijakan Privasi Muse",
-    "Ketentuan Tambahan Muse",
+    "Kebijakan Privasi CEPIRIT",
+    "Ketentuan Tambahan CEPIRIT",
     "Ketentuan Layanan Meta",
     "Kebijakan Privasi Meta",
     "Ketentuan Layanan Meta AI",
