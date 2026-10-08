@@ -128,7 +128,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
             <TombolAksi idx={0} />
             <div
               {...bubbleProps(0)}
-              className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+              className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[75%] md:max-w-[95%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
             >
               {INITIAL[0].text}
             </div>
@@ -142,7 +142,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                 <TombolAksi idx={i + 1} />
                 <div
                   {...bubbleProps(i + 1)}
-                  className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                  className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[75%] md:max-w-[95%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                 >
                   {m.text}
                 </div>
@@ -152,7 +152,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
             <div key={i} className="flex justify-start">
               <div
                 {...bubbleProps(i + 1)}
-                className="bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
+                className="bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[82%] md:max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
               >
                 {m.text}
               </div>
