@@ -136,7 +136,7 @@ export function SectionTitle({ children }) {
 }
 
 /* ---------- Bar atas mobile (fixed, tidak ikut scroll) ---------- */
-export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile, view }) {
+export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
   return (
     <div className="md:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between px-2 pt-1">
       <button
@@ -157,16 +157,19 @@ export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile, view }) 
       ) : (
         <div className="w-[56px] shrink-0" />
       )}
-      <button
-        onClick={onOpenMenu}
-        className="w-11 h-11 flex items-center justify-center text-white text-2xl leading-none"
-        aria-label="Menu"
-      >
-        ⋮
-      </button>
+      <div className="w-11 shrink-0" />
     </div>
   );
 }
+
+/* Ikon garis 3 untuk tombol menu bawah */
+const MENU_3 = (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="17" x2="20" y2="17" />
+  </svg>
+);
 
 /* ---------- Tab bar bawah (mobile) ---------- */
 const tabCheck = (
@@ -208,7 +211,7 @@ export function MobileTabBar({ view, onView, onOpenMenu }) {
         aria-label="Menu"
         className="relative flex flex-col items-center gap-1 px-5 py-1 text-gray-600"
       >
-        {I.menu}
+        {MENU_3}
       </button>
     </nav>
   );

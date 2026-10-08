@@ -175,7 +175,6 @@ export default function App() {
       <div className="md:hidden h-full relative flex flex-col">
         <MobileTopBar
           onOpenDrawer={() => setDrawerOpen(true)}
-          onOpenMenu={() => openSheet("menu")}
           onOpenProfile={openProfile}
           view={view}
         />
