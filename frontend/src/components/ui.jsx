@@ -165,7 +165,7 @@ const tabCheck = (
   </svg>
 );
 
-export function MobileTabBar({ view, onView }) {
+export function MobileTabBar({ view, onView, onOpenMenu }) {
   const tabs = [
     { key: "chat", label: "Obrolan", icon: I.chat },
     { key: "sasaran", label: "Sasaran", icon: tabCheck },
@@ -192,6 +192,13 @@ export function MobileTabBar({ view, onView }) {
           </button>
         );
       })}
+      <button
+        onClick={onOpenMenu}
+        aria-label="Menu"
+        className="relative flex flex-col items-center gap-1 px-5 py-1 text-gray-600"
+      >
+        {I.menu}
+      </button>
     </nav>
   );
 }
@@ -207,9 +214,8 @@ export const I = {
   ),
   menu: (
     <svg width="24" height="24" viewBox="0 0 24 24" {...p}>
-      <line x1="4" y1="7" x2="20" y2="7" />
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="17" x2="20" y2="17" />
+      <line x1="4" y1="9" x2="20" y2="9" />
+      <line x1="4" y1="15" x2="20" y2="15" />
     </svg>
   ),
   gift: (
