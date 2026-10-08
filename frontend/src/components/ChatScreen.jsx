@@ -44,7 +44,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
 
       {/* Area chat */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-36 pb-4 space-y-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4 space-y-4">
         <div className="flex justify-end">
           <div className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap">
             {INITIAL[0].text}
