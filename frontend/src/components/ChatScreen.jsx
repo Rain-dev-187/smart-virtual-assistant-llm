@@ -36,7 +36,6 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         key={panelOpen ? "avatar-hidden" : "avatar-shown"}
         className={`pointer-events-none absolute top-0 inset-x-0 z-10 ${panelOpen ? "xl:hidden" : ""}`}
       >
-        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
         <div className="relative flex justify-center pt-3">
           <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
             <CepiritAvatar size={72} />
