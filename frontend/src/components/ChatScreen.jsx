@@ -63,6 +63,14 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     setMenu(null);
   };
 
+  /* Aksi langsung dari tombol di sebelah bubble */
+  const aksiBalas = (idx) => setReplyTo(messages[idx]);
+  const aksiSalin = (idx) => {
+    const m = messages[idx];
+    if (m && navigator.clipboard) navigator.clipboard.writeText(m.text).catch(() => {});
+  };
+  const aksiHapus = (idx) => setMessages((msgs) => msgs.filter((_, i) => i !== idx));
+
   const bubbleProps = (idx) => ({
     onContextMenu: (e) => onContextMenu(e, idx),
     onTouchStart: (e) => onTouchStart(e, idx),
@@ -71,12 +79,32 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     className: "select-none",
   });
 
-  /* Tombol ⋯ di sebelah bubble sendiri */
-  const openMenuAtBtn = (e, idx) => {
-    e.stopPropagation();
-    const r = e.currentTarget.getBoundingClientRect();
-    openMenu(r.left - 190, r.bottom + 6, idx);
-  };
+  /* 3 tombol aksi di sebelah bubble sendiri */
+  const TombolAksi = ({ idx }) => (
+    <div className="flex flex-col gap-1 mr-1 shrink-0">
+      <button
+        onClick={() => aksiBalas(idx)}
+        title="Balas"
+        className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
+      </button>
+      <button
+        onClick={() => aksiSalin(idx)}
+        title="Salin"
+        className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+      </button>
+      <button
+        onClick={() => aksiHapus(idx)}
+        title="Hapus"
+        className="w-8 h-8 rounded-full text-gray-500 hover:text-red-400 hover:bg-white/10 flex items-center justify-center"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+      </button>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto relative">
@@ -97,13 +125,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-4 md:pb-4 space-y-4" onClick={() => setMenu(null)}>
         <div className="flex justify-end">
           <div className="flex items-center gap-1">
-            <button
-              onClick={(e) => openMenuAtBtn(e, 0)}
-              className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center text-lg leading-none shrink-0"
-              aria-label="Opsi pesan"
-            >
-              ⋯
-            </button>
+            <TombolAksi idx={0} />
             <div
               {...bubbleProps(0)}
               className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
@@ -117,13 +139,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           m.role === "user" ? (
             <div key={i} className="flex justify-end">
               <div className="flex items-center gap-1">
-                <button
-                  onClick={(e) => openMenuAtBtn(e, i + 1)}
-                  className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center text-lg leading-none shrink-0"
-                  aria-label="Opsi pesan"
-                >
-                  ⋯
-                </button>
+                <TombolAksi idx={i + 1} />
                 <div
                   {...bubbleProps(i + 1)}
                   className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
