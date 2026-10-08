@@ -140,6 +140,7 @@ export default function App() {
         onOpenMenu={() => openSheet("menu")}
         onToggleChatSide={() => setChatSide((s) => !s)}
         onOpenProfile={openProfile}
+        panelOpen={rightOpen}
       />
     ) : view === "sasaran" ? (
       <SasaranPage

@@ -9,7 +9,7 @@ const INITIAL = [
   },
 ];
 
-export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile }) {
+export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false }) {
   const [messages, setMessages] = useState(INITIAL);
   const [draft, setDraft] = useState("");
 
@@ -54,8 +54,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4 relative">
-        <div className="flex justify-center">
-          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full">
+        {/* Avatar tengah — sembunyi saat panel kanan terbuka (profil pindah ke sidebar),
+            muncul lagi dengan animasi pop-up saat panel ditutup */}
+        <div
+          key={panelOpen ? "avatar-hidden" : "avatar-shown"}
+          className={`flex justify-center ${panelOpen ? "xl:hidden" : ""}`}
+        >
+          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full animate-pop-in">
             <CepiritAvatar size={72} />
           </button>
         </div>
