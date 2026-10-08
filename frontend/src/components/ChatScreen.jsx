@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CepiritAvatar, I } from "./ui";
+import { I } from "./ui";
 
 const INITIAL = [
   { role: "user", text: "kalo untuk LLM ada harganya gk" },
@@ -9,7 +9,7 @@ const INITIAL = [
   },
 ];
 
-export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false }) {
+export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide }) {
   const [messages, setMessages] = useState(INITIAL);
   const [draft, setDraft] = useState("");
 
@@ -29,22 +29,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto relative">
-      {/* Avatar tengah — overlay transparan, tidak ikut scroll.
-          Chat sebelumnya tetap kelihatan di belakangnya.
-          Sembunyi saat panel kanan terbuka (profil pindah ke sidebar) */}
-      <div
-        key={panelOpen ? "avatar-hidden" : "avatar-shown"}
-        className={`pointer-events-none absolute top-0 inset-x-0 z-10 hidden md:block ${panelOpen ? "xl:hidden" : ""}`}
-      >
-        <div className="relative flex justify-center pt-3">
-          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
-            <CepiritAvatar size={72} />
-          </button>
-        </div>
-      </div>
-
       {/* Area chat */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-32 md:pb-4 space-y-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-4 md:pb-4 space-y-4">
         <div className="flex justify-end">
           <div className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap">
             {INITIAL[0].text}

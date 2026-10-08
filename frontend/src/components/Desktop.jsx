@@ -24,7 +24,7 @@ const J = {
 };
 
 /* ---------- Rel ikon kiri (desktop) ---------- */
-export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenMenu }) {
+export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenMenu, onOpenProfile }) {
   const btn = (active) =>
     `relative w-11 h-11 rounded-2xl flex items-center justify-center transition-colors ${
       active ? "bg-card2 text-white" : "text-gray-500 hover:text-gray-200 hover:bg-card"
@@ -33,7 +33,9 @@ export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenMen
   return (
     <nav className="w-[68px] shrink-0 h-full border-r border-white/10 flex flex-col items-center py-4 gap-1.5 bg-black">
       <div className="mb-3">
-        <CepiritAvatar size={40} label={false} />
+        <button onClick={onOpenProfile} className="rounded-full animate-pop-in" aria-label="Profil CEPIRIT" title="Profil CEPIRIT">
+          <CepiritAvatar size={40} label={false} />
+        </button>
       </div>
       <button className={btn(view === "chat")} onClick={() => { onView("chat"); onOpenChatSide(); }} title="Obrolan">
         {I.chat}
