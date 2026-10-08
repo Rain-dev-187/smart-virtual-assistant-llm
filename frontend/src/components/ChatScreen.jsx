@@ -28,23 +28,24 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   };
 
   return (
-    <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto">
-      {/* Bayangan tipis pengganti header (desktop) */}
-      <div className="hidden md:block shrink-0 h-5 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
-
-      {/* Avatar tengah — selalu tampil, tidak ikut scroll;
-          sembunyi saat panel kanan terbuka (profil pindah ke sidebar) */}
+    <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto relative">
+      {/* Avatar tengah — overlay transparan, tidak ikut scroll.
+          Chat sebelumnya tetap kelihatan di belakangnya.
+          Sembunyi saat panel kanan terbuka (profil pindah ke sidebar) */}
       <div
         key={panelOpen ? "avatar-hidden" : "avatar-shown"}
-        className={`shrink-0 flex justify-center pt-2 ${panelOpen ? "xl:hidden" : ""}`}
+        className={`pointer-events-none absolute top-0 inset-x-0 z-10 ${panelOpen ? "xl:hidden" : ""}`}
       >
-        <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="rounded-full animate-pop-in">
-          <CepiritAvatar size={72} />
-        </button>
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
+        <div className="relative flex justify-center pt-3">
+          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
+            <CepiritAvatar size={72} />
+          </button>
+        </div>
       </div>
 
       {/* Area chat */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-36 pb-4 space-y-4">
         <div className="flex justify-end">
           <div className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap">
             {INITIAL[0].text}
