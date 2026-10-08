@@ -487,30 +487,92 @@ export function GaleriPage({ artifacts, filterLabel, onCreate, onDelete }) {
 }
 
 /* ---------- Form buat sasaran (di dalam Sheet) ---------- */
-export function SasaranForm({ kategori, onSubmit, onBack }) {
-  const [teks, setTeks] = useState("");
+/* ---------- Form Laporkan Masalah ---------- */
+export function LaporMasalahForm({ onBack }) {
+  const [isi, setIsi] = useState("");
+  const [kategori, setKategori] = useState("");
+  const [diagnostik, setDiagnostik] = useState(false);
   return (
-    <div>
-      <SheetHeader title={kategori.label} onBack={onBack} />
-      <div className="px-5 py-2">
-        <p className="text-gray-400 text-[15px] mb-4">
-          Tulis sasaran {kategori.label.toLowerCase()} yang ingin Anda capai.
-        </p>
-        <textarea
-          value={teks}
-          onChange={(e) => setTeks(e.target.value)}
-          rows={3}
-          placeholder="Contoh: Lari 5 km tiap pagi"
-          className="w-full bg-card2 rounded-2xl p-4 text-white outline-none placeholder-gray-500 text-[16px] resize-none"
-        />
-        <button
-          disabled={!teks.trim()}
-          onClick={() => onSubmit(teks.trim())}
-          className="mt-4 w-full bg-accent disabled:opacity-40 text-white rounded-full py-3 font-semibold"
-        >
-          Mulai
+    <div className="px-6 py-6">
+      <div className="flex items-start justify-between mb-4">
+        <h2 className="text-[20px] font-semibold">Laporkan masalah</h2>
+        <button onClick={onBack} className="text-gray-400 hover:text-white text-2xl leading-none -mt-1" aria-label="Tutup">×</button>
+      </div>
+      <textarea
+        value={isi}
+        onChange={(e) => setIsi(e.target.value)}
+        rows={5}
+        placeholder="Jelaskan apa yang terjadi atau apa yang tidak berfungsi..."
+        className="w-full bg-card2 rounded-2xl p-4 text-white outline-none placeholder-gray-500 text-[15px] resize-none"
+      />
+      <div className="flex gap-2 mt-3 flex-wrap">
+        <button className="flex items-center gap-2 bg-card2 hover:bg-white/10 rounded-full px-4 py-2.5 text-[14px] text-white transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          Ambil gambar layar
+        </button>
+        <button className="flex items-center gap-2 bg-card2 hover:bg-white/10 rounded-full px-4 py-2.5 text-[14px] text-white transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+          Tambahkan cuplikan layar atau video
         </button>
       </div>
+      <div className="mt-5">
+        <div className="text-[15px] font-medium mb-2">Kategori</div>
+        <select
+          value={kategori}
+          onChange={(e) => setKategori(e.target.value)}
+          className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-[15px] text-gray-300 outline-none appearance-none"
+        >
+          <option value="" disabled>Pilih kategori</option>
+          <option value="bug">Bug / tidak berfungsi</option>
+          <option value="tampilan">Masalah tampilan</option>
+          <option value="fitur">Usulan fitur</option>
+          <option value="lain">Lainnya</option>
+        </select>
+      </div>
+      <label className="flex items-start gap-3 mt-5 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={diagnostik}
+          onChange={(e) => setDiagnostik(e.target.checked)}
+          className="mt-1 w-4 h-4 accent-[#2b8cff]"
+        />
+        <span className="text-[14px] text-gray-300 leading-snug">Sertakan catatan dan diagnostik lengkap di laporan Anda</span>
+      </label>
+      <button
+        disabled={!isi.trim()}
+        onClick={onBack}
+        className="mt-6 w-full bg-[#2b8cff] hover:bg-[#1f7ef0] disabled:opacity-40 text-white rounded-full py-3.5 font-semibold text-[16px] transition-colors"
+      >
+        Kirim laporan
+      </button>
+    </div>
+  );
+}
+
+/* ---------- Form Buat Sasaran (modal ala muse.ai) ---------- */
+export function SasaranForm({ kategori, onSubmit, onBack }) {
+  return (
+    <div className="px-6 py-6">
+      <div className="flex items-start justify-between mb-4">
+        <h2 className="text-[20px] font-semibold">Buat sasaran {kategori.label.toLowerCase()}</h2>
+        <button onClick={onBack} className="text-gray-400 hover:text-white text-2xl leading-none -mt-1" aria-label="Tutup">×</button>
+      </div>
+      <p className="text-gray-300 text-[15px] leading-relaxed mb-6">
+        Pertama, kita akan menyempurnakan sasaran bersama-sama dalam obrolan. Saya akan
+        mengajukan beberapa pertanyaan untuk memperjelas apa yang Anda upayakan. Setelah
+        itu, saya akan melacak kemajuan Anda di sini.
+      </p>
+      <button
+        onClick={onSubmit}
+        className="w-full bg-[#2b8cff] hover:bg-[#1f7ef0] text-white rounded-full py-3.5 font-semibold text-[16px] flex items-center justify-center gap-2 transition-colors"
+      >
+        <span>✦</span> Ayo lakukan
+      </button>
     </div>
   );
 }

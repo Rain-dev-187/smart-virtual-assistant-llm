@@ -14,6 +14,7 @@ import {
   SasaranPage,
   GaleriPage,
   SasaranForm,
+  LaporMasalahForm,
   ArtefakForm,
   GALERI_LABEL,
   TIPE_ARTEFAK,
@@ -93,13 +94,24 @@ export default function App() {
               closeSheet();
               setSettingsOpen(true);
             }}
+            onOpenLapor={() => openSheet("lapor-form")}
           />
         );
+      case "lapor-form":
+        return <LaporMasalahForm onBack={back} />;
       case "artefak":
         return <Artefak {...props} />;
       case "sasaran-form":
         return pendingKategori ? (
-          <SasaranForm kategori={pendingKategori} onSubmit={addGoal} onBack={back} />
+          <SasaranForm
+            kategori={pendingKategori}
+            onSubmit={() => {
+              setPendingKategori(null);
+              back();
+              goView("chat");
+            }}
+            onBack={back}
+          />
         ) : null;
       case "artefak-form":
         return <ArtefakForm onSubmit={addArtefak} onBack={back} />;

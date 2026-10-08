@@ -2,13 +2,13 @@ import React from "react";
 import { I, MenuRow, SheetHeader } from "./ui";
 
 /* ---------- Sheet "menu": Laporkan masalah / Pengaturan ---------- */
-export function MenuSheet({ onOpenSettings, onClose }) {
+export function MenuSheet({ onOpenSettings, onOpenLapor, onClose }) {
   return (
     <div className="pt-2">
       <MenuRow
         icon={I.bug}
         title="Laporkan masalah"
-        onClick={() => {}}
+        onClick={onOpenLapor}
         right={null}
       />
       <MenuRow
