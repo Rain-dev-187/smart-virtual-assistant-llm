@@ -71,6 +71,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     className: "select-none",
   });
 
+  /* Tombol ⋯ di sebelah bubble sendiri */
+  const openMenuAtBtn = (e, idx) => {
+    e.stopPropagation();
+    const r = e.currentTarget.getBoundingClientRect();
+    openMenu(r.left - 190, r.bottom + 6, idx);
+  };
+
   return (
     <div className="flex flex-col h-full w-full max-w-md md:max-w-3xl mx-auto relative">
       {/* Avatar tengah — overlay transparan (desktop), tidak ikut scroll.
@@ -89,22 +96,40 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-4 md:pb-4 space-y-4" onClick={() => setMenu(null)}>
         <div className="flex justify-end">
-          <div
-            {...bubbleProps(0)}
-            className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
-          >
-            {INITIAL[0].text}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={(e) => openMenuAtBtn(e, 0)}
+              className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center text-lg leading-none shrink-0"
+              aria-label="Opsi pesan"
+            >
+              ⋯
+            </button>
+            <div
+              {...bubbleProps(0)}
+              className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+            >
+              {INITIAL[0].text}
+            </div>
           </div>
         </div>
 
         {messages.slice(1).map((m, i) =>
           m.role === "user" ? (
             <div key={i} className="flex justify-end">
-              <div
-                {...bubbleProps(i + 1)}
-                className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
-              >
-                {m.text}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={(e) => openMenuAtBtn(e, i + 1)}
+                  className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center text-lg leading-none shrink-0"
+                  aria-label="Opsi pesan"
+                >
+                  ⋯
+                </button>
+                <div
+                  {...bubbleProps(i + 1)}
+                  className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                >
+                  {m.text}
+                </div>
               </div>
             </div>
           ) : (
