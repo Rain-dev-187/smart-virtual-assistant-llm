@@ -276,7 +276,7 @@ const KATEGORI = [
 export function SasaranPage({ goals, onSelectKategori, onDeleteGoal }) {
   return (
     <div className="h-full overflow-y-auto no-scrollbar">
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-6 pt-14 pb-24 md:py-8">
         <h1 className="text-[28px] font-bold mb-3">Sasaran</h1>
         <p className="text-gray-400 text-[16px] leading-relaxed mb-8">
           Pilih kategori dan beri tahu saya apa yang Anda inginkan, dan saya akan membuat paket personal yang akan berkembang bersama Anda.
@@ -323,7 +323,7 @@ export function SasaranPage({ goals, onSelectKategori, onDeleteGoal }) {
 export function GaleriPage({ artifacts, filterLabel, onCreate, onDelete }) {
   return (
     <div className="h-full overflow-y-auto no-scrollbar">
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-6 pt-14 pb-24 md:py-8">
         <div className="flex items-center justify-between mb-10 flex-wrap gap-3">
           <h1 className="text-[28px] font-bold">{filterLabel}</h1>
           <div className="flex items-center gap-2">

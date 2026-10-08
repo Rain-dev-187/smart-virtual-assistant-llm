@@ -135,10 +135,10 @@ export function SectionTitle({ children }) {
   return <h3 className="text-gray-400 text-[17px] font-semibold px-5 mt-6 mb-2">{children}</h3>;
 }
 
-/* ---------- Bar atas mobile ---------- */
+/* ---------- Bar atas mobile (overlay transparan) ---------- */
 export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile }) {
   return (
-    <div className="md:hidden flex items-center justify-between px-2 pt-1 shrink-0">
+    <div className="md:hidden absolute top-0 inset-x-0 z-20 flex items-center justify-between px-2 pt-1">
       <button
         onClick={onOpenDrawer}
         className="w-11 h-11 flex items-center justify-center text-white"
@@ -180,7 +180,7 @@ export function MobileTabBar({ view, onView, onOpenMenu }) {
   ];
   return (
     <nav
-      className="md:hidden shrink-0 border-t border-white/10 bg-black flex justify-around px-8 pt-2"
+      className="md:hidden absolute bottom-0 inset-x-0 z-20 flex justify-around px-8 pt-2"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {tabs.map((t) => {

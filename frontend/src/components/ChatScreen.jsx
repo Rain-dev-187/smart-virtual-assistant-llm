@@ -44,7 +44,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
 
       {/* Area chat */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4 space-y-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-4 md:pb-4 space-y-4">
         <div className="flex justify-end">
           <div className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap">
             {INITIAL[0].text}
@@ -69,8 +69,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
       </div>
 
-      {/* Input bar */}
-      <div className="shrink-0 px-4 pb-3 pt-2">
+      {/* Input bar — melayang transparan di mobile, normal di desktop */}
+      <div className="absolute bottom-16 inset-x-0 z-10 px-4 pb-3 pt-2 md:static md:z-auto md:shrink-0">
         <div className="flex items-center gap-2 bg-card rounded-full pl-5 pr-2 py-2">
           <input
             value={draft}
