@@ -128,7 +128,7 @@ export default function App() {
         onOpenDrawer={() => setDrawerOpen(true)}
         onOpenMenu={() => openSheet("menu")}
         onToggleChatSide={() => setChatSide((s) => !s)}
-        onOpenProfile={() => openSheet("profil")}
+        onOpenProfile={openProfile}
       />
     ) : view === "sasaran" ? (
       <SasaranPage
@@ -151,6 +151,17 @@ export default function App() {
   const goView = (v) => {
     setView(v);
     if (v !== "galeri") setGaleriFilter("semua");
+  };
+
+  // Klik avatar tengah: di layar lebar tampilkan panel kanan,
+  // di layar kecil (tanpa panel kanan) buka sheet profil
+  const openProfile = () => {
+    if (window.matchMedia("(min-width: 1280px)").matches) {
+      setView("chat");
+      setRightOpen(true);
+    } else {
+      openSheet("profil");
+    }
   };
 
   return (
