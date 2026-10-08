@@ -136,7 +136,7 @@ export function SectionTitle({ children }) {
 }
 
 /* ---------- Bar atas mobile ---------- */
-export function MobileTopBar({ onOpenDrawer, onOpenMenu }) {
+export function MobileTopBar({ onOpenDrawer, onOpenMenu, onOpenProfile }) {
   return (
     <div className="md:hidden flex items-center justify-between px-2 pt-1 shrink-0">
       <button
@@ -145,6 +145,13 @@ export function MobileTopBar({ onOpenDrawer, onOpenMenu }) {
         aria-label="Buka menu"
       >
         {I.menu}
+      </button>
+      <button
+        onClick={onOpenProfile}
+        className="rounded-full animate-pop-in"
+        aria-label="Lihat profil CEPIRIT"
+      >
+        <CepiritAvatar size={38} label={false} />
       </button>
       <button
         onClick={onOpenMenu}

@@ -34,7 +34,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           Sembunyi saat panel kanan terbuka (profil pindah ke sidebar) */}
       <div
         key={panelOpen ? "avatar-hidden" : "avatar-shown"}
-        className={`pointer-events-none absolute top-0 inset-x-0 z-10 ${panelOpen ? "xl:hidden" : ""}`}
+        className={`pointer-events-none absolute top-0 inset-x-0 z-10 hidden md:block ${panelOpen ? "xl:hidden" : ""}`}
       >
         <div className="relative flex justify-center pt-3">
           <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
