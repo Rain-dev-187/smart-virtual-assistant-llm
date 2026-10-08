@@ -1,29 +1,94 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import ChatScreen from "./components/ChatScreen";
+import Drawer from "./components/Drawer";
+import { MenuSheet, SettingsSheet } from "./components/SettingsMenu";
+import Umum from "./components/Umum";
+import Konektor from "./components/Konektor";
+import Izin from "./components/Izin";
+import KontrolData from "./components/KontrolData";
+import { Dompet, Saluran, Bantuan, InfoHukum, Artefak, Perangkat } from "./components/SmallScreens";
+import { Sheet } from "./components/ui";
 
 export default function App() {
-  const [status, setStatus] = useState("Belum dicek");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [stack, setStack] = useState([]); // tumpukan halaman bottom-sheet
 
-  async function cekBackend() {
-    try {
-      const res = await fetch("http://localhost:8000/api/health");
-      const data = await res.json();
-      setStatus("Terhubung: " + JSON.stringify(data));
-    } catch (e) {
-      setStatus("Gagal terhubung: " + e.message);
+  const openSheet = (page) => setStack((s) => [...s, page]);
+  const back = () => setStack((s) => s.slice(0, -1));
+  const closeSheet = () => setStack([]);
+  const current = stack[stack.length - 1];
+
+  const renderPage = () => {
+    const props = { onBack: back, onClose: closeSheet };
+    switch (current) {
+      case "menu":
+        return <MenuSheet onClose={closeSheet} onOpenSettings={() => setStack(["settings"])} />;
+      case "settings":
+        return (
+          <SettingsSheet
+            onBack={back}
+            onOpen={(key) => openSheet(key)}
+            onLogout={() => {
+              closeSheet();
+              alert("Anda telah logout (demo).");
+            }}
+          />
+        );
+      case "umum":
+        return <Umum {...props} />;
+      case "konektor":
+        return <Konektor {...props} />;
+      case "dompet":
+        return <Dompet {...props} />;
+      case "kredensial":
+        return (
+          <div className="p-5">
+            <div className="text-xl font-semibold mb-2">Penyimpanan kredensial aman</div>
+            <p className="text-gray-400 text-[15px]">Kredensial Anda disimpan terenkripsi di brankas aman perangkat ini.</p>
+          </div>
+        );
+      case "izin":
+        return <Izin {...props} />;
+      case "saluran":
+        return <Saluran {...props} />;
+      case "perangkat":
+        return <Perangkat {...props} />;
+      case "kontroldata":
+        return <KontrolData {...props} />;
+      case "bantuan":
+        return <Bantuan {...props} />;
+      case "infohukum":
+        return <InfoHukum {...props} />;
+      case "artefak":
+        return <Artefak {...props} />;
+      default:
+        return null;
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center gap-6 p-6">
-      <h1 className="text-3xl font-bold">Smart Virtual Assistant</h1>
-      <p className="text-slate-400">Asisten produktivitas berbasis LLM (setup awal)</p>
-      <button
-        onClick={cekBackend}
-        className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-medium"
-      >
-        Cek koneksi backend
-      </button>
-      <p className="text-sm text-slate-400">{status}</p>
+    <div className="h-full bg-black flex justify-center">
+      <div className="w-full max-w-md h-full bg-black relative overflow-hidden sm:border-x sm:border-white/10">
+        <ChatScreen
+          onOpenDrawer={() => setDrawerOpen(true)}
+          onOpenMenu={() => openSheet("menu")}
+        />
+
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onOpenSheet={(page) => {
+            setDrawerOpen(false);
+            openSheet(page);
+          }}
+        />
+
+        {current && (
+          <Sheet onClose={closeSheet} labelled={current !== "artefak"}>
+            {renderPage()}
+          </Sheet>
+        )}
+      </div>
     </div>
   );
 }
