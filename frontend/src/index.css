@@ -35,3 +35,35 @@ body {
 .animate-pop-in {
   animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+/* Animasi logo CEPIRIT: kepala bergoyang kanan-kiri, pupil mata bergerak */
+@keyframes cepirit-sway {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+.cepirit-sway {
+  animation: cepirit-sway 3s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: 50% 85%;
+}
+@keyframes cepirit-look {
+  from {
+    transform: translateX(-2.5px);
+  }
+  to {
+    transform: translateX(2.5px);
+  }
+}
+.cepirit-look {
+  animation: cepirit-look 2.2s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cepirit-sway,
+  .cepirit-look {
+    animation: none;
+  }
+}
