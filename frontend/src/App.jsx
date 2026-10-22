@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AuthScreen from "./components/AuthScreen";
 import ChatScreen from "./components/ChatScreen";
 import Drawer from "./components/Drawer";
 import { MenuSheet } from "./components/SettingsMenu";
@@ -21,6 +22,32 @@ import {
 } from "./components/Desktop";
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => {
+    try {
+      return (
+        localStorage.getItem("cepirit_authed") === "1" ||
+        sessionStorage.getItem("cepirit_authed") === "1"
+      );
+    } catch {
+      return false;
+    }
+  });
+  const handleAuthSuccess = (identifier, remember) => {
+    try {
+      if (remember) localStorage.setItem("cepirit_authed", "1");
+      else sessionStorage.setItem("cepirit_authed", "1");
+      localStorage.setItem("cepirit_user", identifier);
+    } catch {}
+    setAuthed(true);
+  };
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("cepirit_authed");
+      sessionStorage.removeItem("cepirit_authed");
+    } catch {}
+    setSettingsOpen(false);
+    setAuthed(false);
+  };
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [stack, setStack] = useState([]); // tumpukan halaman bottom-sheet
   const [view, setView] = useState("chat"); // chat | sasaran | galeri
@@ -169,6 +196,14 @@ export default function App() {
     if (v !== "galeri") setGaleriFilter("semua");
   };
 
+  if (!authed) {
+    return (
+      <div className="h-full bg-[#171717]">
+        <AuthScreen onSuccess={handleAuthSuccess} />
+      </div>
+    );
+  }
+
   return (
     <div className="h-full bg-[#171717]">
       {/* ============ MOBILE (<md) ============ */}
@@ -235,13 +270,7 @@ export default function App() {
 
       {/* Modal pengaturan 2 kolom */}
       {settingsOpen && (
-        <SettingsModal
-          onClose={() => setSettingsOpen(false)}
-          onLogout={() => {
-            setSettingsOpen(false);
-            alert("Anda telah logout (demo).");
-          }}
-        />
+        <SettingsModal onClose={() => setSettingsOpen(false)} onLogout={handleLogout} />
       )}
 
       {/* Modal pencarian */}
