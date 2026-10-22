@@ -14,21 +14,29 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   const [draft, setDraft] = useState("");
   const [menu, setMenu] = useState(null); // {x, y, idx}
   const [replyTo, setReplyTo] = useState(null); // pesan yang dibalas
+  const [sending, setSending] = useState(false); // balasan sedang diproses (avatar "working")
   const pressTimer = useRef(null);
+  const replyTimer = useRef(null);
 
   const send = () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || sending) return;
     setDraft("");
     setReplyTo(null);
-    setMessages((m) => [
-      ...m,
-      { role: "user", text },
-      {
-        role: "asisten",
-        text: "Oke, aku terima pesanmu: \"" + text + "\". Ini demo UI ya — hubungkan ke backend LLM biar aku bisa jawab beneran.",
-      },
-    ]);
+    setMessages((m) => [...m, { role: "user", text }]);
+    /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
+    setSending(true);
+    clearTimeout(replyTimer.current);
+    replyTimer.current = setTimeout(() => {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "asisten",
+          text: "Oke, aku terima pesanmu: \"" + text + "\". Ini demo UI ya — hubungkan ke backend LLM biar aku bisa jawab beneran.",
+        },
+      ]);
+      setSending(false);
+    }, 1200);
   };
 
   /* Buka menu konteks (klik kanan / tahan lama) */
@@ -116,7 +124,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       >
         <div className="relative flex justify-center pt-3">
           <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
-            <CepiritAvatar size={72} />
+            <CepiritAvatar size={72} state={sending ? "working" : "idle"} />
           </button>
         </div>
       </div>
@@ -158,6 +166,18 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
               </div>
             </div>
           )
+        )}
+
+        {/* Indikator progress: avatar mini lompat-lompat + titik mengetik */}
+        {sending && (
+          <div className="flex justify-start items-end gap-2">
+            <CepiritAvatar size={34} label={false} state="working" />
+            <div className="bg-card rounded-3xl rounded-bl-lg px-5 py-4 flex items-center gap-1.5">
+              <span className="typing-dot w-2 h-2 rounded-full bg-gray-300 inline-block" />
+              <span className="typing-dot typing-dot-2 w-2 h-2 rounded-full bg-gray-300 inline-block" />
+              <span className="typing-dot typing-dot-3 w-2 h-2 rounded-full bg-gray-300 inline-block" />
+            </div>
+          </div>
         )}
 
       </div>
@@ -208,7 +228,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           />
           <button
             onClick={send}
-            className="w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shrink-0"
+            disabled={sending}
+            className="w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50"
             aria-label="Kirim"
           >
             {I.send}

@@ -1,7 +1,47 @@
 import React from "react";
+import { DEFAULT_AVATAR, useAvatar } from "../lib/avatar";
 
-/* ---------- Avatar "CEPIRIT" animasi ---------- */
-export function CepiritAvatar({ size = 64, label = true }) {
+/* ---------- Bagian topi avatar ---------- */
+function AvatarHat({ hat }) {
+  if (hat === "topi") {
+    return (
+      <g transform="rotate(-8 48 27)">
+        <path d="M25 33 Q48 13 71 33 Z" fill="#3b82f6" />
+        <path d="M60 29 Q86 27 89 35 Q75 39 60 35 Z" fill="#2563eb" />
+        <circle cx="48" cy="19" r="3" fill="#2563eb" />
+      </g>
+    );
+  }
+  if (hat === "mahkota") {
+    return (
+      <g transform="rotate(-8 48 27)">
+        <polygon points="28,36 28,20 38,28 48,16 58,28 68,20 68,36" fill="#ffd166" stroke="#e0a800" strokeWidth="1.5" />
+        <circle cx="48" cy="27" r="2.6" fill="#ff5a5a" />
+      </g>
+    );
+  }
+  if (hat === "none") return null;
+  /* toga (bawaan) */
+  return (
+    <g transform="rotate(-8 48 27)">
+      <polygon points="48,14 80,27 48,40 16,27" fill="#6a5cff" />
+      <polygon points="48,14 80,27 48,40 16,27" fill="none" stroke="#8f88ff" strokeWidth="1.5" opacity="0.6" />
+      <rect x="40" y="32" width="16" height="9" rx="2" fill="#6a5cff" />
+      <line x1="78" y1="27" x2="78" y2="44" stroke="#ffd166" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="78" cy="47" r="3.5" fill="#ffd166" />
+    </g>
+  );
+}
+
+/* ---------- Avatar "CEPIRIT" animasi ----------
+   Props:
+   - config: { body, hat, accessory } — bawaan: konfigurasi global user
+   - state: "idle" (goyang pelan) | "working" (lompat-lompat saat progress berjalan)
+*/
+export function CepiritAvatar({ size = 64, label = true, config, state = "idle" }) {
+  const global = useAvatar();
+  const cfg = { ...DEFAULT_AVATAR, ...(config || global.config) };
+  const working = state === "working";
   return (
     <div className="flex flex-col items-center">
       <div
@@ -11,34 +51,44 @@ export function CepiritAvatar({ size = 64, label = true }) {
         <svg viewBox="0 0 96 96" width={size} height={size}>
           {/* bayangan bawah */}
           <ellipse cx="48" cy="88" rx="24" ry="4" fill="#000" opacity="0.25" />
-          {/* kepala + topi (bergoyang kanan-kiri) */}
-          <g className="cepirit-sway">
-            <circle cx="48" cy="56" r="30" fill="#ff9046" />
-            <ellipse cx="40" cy="46" rx="10" ry="6" fill="#ffb37a" opacity="0.85" />
-            {/* topi toga */}
-            <g transform="rotate(-8 48 27)">
-              <polygon points="48,14 80,27 48,40 16,27" fill="#6a5cff" />
-              <polygon points="48,14 80,27 48,40 16,27" fill="none" stroke="#8f88ff" strokeWidth="1.5" opacity="0.6" />
-              <rect x="40" y="32" width="16" height="9" rx="2" fill="#6a5cff" />
-              <line x1="78" y1="27" x2="78" y2="44" stroke="#ffd166" strokeWidth="2.5" strokeLinecap="round" />
-              <circle cx="78" cy="47" r="3.5" fill="#ffd166" />
+          {/* kepala + topi: goyang pelan saat idle, lompat-lompat saat working */}
+          <g className={working ? "cepirit-bounce" : "cepirit-sway"}>
+            <circle cx="48" cy="56" r="30" fill={cfg.body} />
+            <ellipse cx="40" cy="46" rx="10" ry="6" fill="#fff" opacity="0.35" />
+            <AvatarHat hat={cfg.hat} />
+            {/* mata + pupil (kedip; pupil melirik, lebih cepat saat working) */}
+            <g className="cepirit-blink">
+              <circle cx="38" cy="58" r="7" fill="#fff" />
+              <circle cx="58" cy="58" r="7" fill="#fff" />
+              <g className={`cepirit-look ${working ? "cepirit-look-fast" : ""}`}>
+                <circle cx="38" cy="58" r="3.5" fill="#2b2b2b" />
+                <circle cx="58" cy="58" r="3.5" fill="#2b2b2b" />
+                <circle cx="39.2" cy="56.8" r="1.1" fill="#fff" />
+                <circle cx="59.2" cy="56.8" r="1.1" fill="#fff" />
+              </g>
             </g>
-            {/* mata */}
-            <circle cx="38" cy="58" r="7" fill="#fff" />
-            <circle cx="58" cy="58" r="7" fill="#fff" />
-            {/* pupil (bergerak kanan-kiri) */}
-            <g className="cepirit-look">
-              <circle cx="38" cy="58" r="3.5" fill="#2b2b2b" />
-              <circle cx="58" cy="58" r="3.5" fill="#2b2b2b" />
-              <circle cx="39.2" cy="56.8" r="1.1" fill="#fff" />
-              <circle cx="59.2" cy="56.8" r="1.1" fill="#fff" />
-            </g>
+            {/* kacamata */}
+            {cfg.accessory === "kacamata" && (
+              <g stroke="#2b2b2b" strokeWidth="2.2" fill="none" strokeLinecap="round">
+                <circle cx="38" cy="58" r="10" />
+                <circle cx="58" cy="58" r="10" />
+                <line x1="28" y1="55" x2="20" y2="49" />
+                <line x1="68" y1="55" x2="76" y2="49" />
+              </g>
+            )}
             {/* pipi */}
             <circle cx="29" cy="68" r="4" fill="#ff8fa3" opacity="0.65" />
             <circle cx="67" cy="68" r="4" fill="#ff8fa3" opacity="0.65" />
             {/* senyum */}
             <path d="M38 73 Q48 82 58 73" stroke="#4a2410" strokeWidth="3.5" fill="none" strokeLinecap="round" />
           </g>
+          {/* percikan bintang saat bekerja */}
+          {working && (
+            <>
+              <polygon className="cepirit-spark" points="14,26 16,32 22,34 16,36 14,42 12,36 6,34 12,32" fill="#ffd166" />
+              <polygon className="cepirit-spark cepirit-spark-2" points="82,52 83.5,57 88.5,58.5 83.5,60 82,65 80.5,60 75.5,58.5 80.5,57" fill="#ffd166" />
+            </>
+          )}
         </svg>
       </div>
       {label && (
