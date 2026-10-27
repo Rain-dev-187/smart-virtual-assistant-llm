@@ -12,8 +12,14 @@ def _llm_configured() -> bool:
     return bool(settings.llm_api_key) and bool(settings.llm_model)
 
 
-def generate_reply(message: str) -> tuple[str, str]:
-    """Kembalikan (reply, mode). Mode: 'stub' atau 'llm'."""
+def generate_reply(
+    message: str, history: list[dict] | None = None
+) -> tuple[str, str]:
+    """Kembalikan (reply, mode). Mode: 'stub' atau 'llm'.
+
+    history: daftar pesan sebelumnya, format [{"role": ..., "content": ...}].
+    Hanya dipakai saat LLM aktif, supaya LLM ingat konteks percakapan.
+    """
     if not _llm_configured():
         return (
             "Backend jalan dalam mode stub (LLM_API_KEY belum diisi). "
@@ -25,6 +31,8 @@ def generate_reply(message: str) -> tuple[str, str]:
         api_key=settings.llm_api_key,
         base_url=settings.llm_base_url or None,
     )
+    # 10 pesan terakhir cukup sebagai konteks, biar token tidak membengkak
+    context = (history or [])[-10:]
     resp = client.chat.completions.create(
         model=settings.llm_model,
         messages=[
@@ -32,6 +40,7 @@ def generate_reply(message: str) -> tuple[str, str]:
                 "role": "system",
                 "content": "Kamu asisten virtual yang membantu dan menjawab dengan ringkas.",
             },
+            *context,
             {"role": "user", "content": message},
         ],
         max_tokens=512,
