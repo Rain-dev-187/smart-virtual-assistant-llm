@@ -1,11 +1,17 @@
-# Backend — Smart Virtual Assistant (v0.1 / 10%)
+# Backend — Smart Virtual Assistant (v0.2 / riwayat chat + auth)
 
-Backend FastAPI tahap awal. Yang sudah jalan:
+Backend FastAPI. Yang sudah jalan:
 
 - `GET /` dan `GET /api/health` — cek status
-- `POST /api/chat` — terima `{"message": "..."}`, balas `{"reply": "...", "mode": "stub"|"llm"}`
+- `POST /api/chat` — terima `{"message": "...", "session_id": "..."}`, balas `{"reply": "...", "mode": "stub"|"llm", "session_id": "..."}`
   - Tanpa `LLM_API_KEY`: mode **stub** (balasan contoh, tanpa biaya API)
-  - Dengan `LLM_API_KEY` + `LLM_MODEL`: memanggil LLM lewat klien OpenAI-compatible
+  - Dengan `LLM_API_KEY` + `LLM_MODEL`: memanggil LLM lewat klien OpenAI-compatible; 10 pesan terakhir dikirim sebagai konteks
+  - Kirim `session_id` untuk lanjutkan percakapan; kosongkan untuk mulai sesi baru
+- `GET /api/chat/history/{session_id}` — ambil seluruh riwayat satu sesi
+- `DELETE /api/chat/history/{session_id}` — hapus riwayat satu sesi
+- **Auth API key**: isi `API_KEY` di `.env`, lalu setiap request ke `/api/chat*` wajib menyertakan header `X-API-Key: <isi API_KEY>`. Kalau `API_KEY` kosong, auth mati (mode dev).
+
+Catatan: riwayat disimpan di memori (in-memory). Restart server = riwayat hilang. Nanti diganti PostgreSQL tanpa mengubah route — cukup ganti isi `app/db/memory.py`.
 
 ## Jalankan lokal (Windows)
 
@@ -42,4 +48,4 @@ Tabel `user_avatars` & `avatar_requests` dibuat otomatis saat startup.
 
 ## Berikutnya (belum dikerjakan)
 
-Auth/JWT, riwayat chat di database (pgvector), integrasi Google Calendar (Sprint 3).
+Pindahkan riwayat chat ke PostgreSQL (pgvector), auth JWT per pengguna, RAG, integrasi Google Calendar (Sprint 3).

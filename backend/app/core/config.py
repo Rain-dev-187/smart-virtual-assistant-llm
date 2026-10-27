@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = ""
     llm_model: str = ""
+    api_key: str = ""  # kosong = auth mati (mode dev)
 
     class Config:
         env_file = ".env"
