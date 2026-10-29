@@ -9,6 +9,34 @@ const INITIAL = [
   },
 ];
 
+/* Wiring backend issue #20: ChatScreen -> POST /api/chat.
+   - API_URL default http://localhost:8000 (backend uvicorn --port 8000);
+     override lewat VITE_API_URL di frontend/.env (lihat frontend/.env.example).
+   - session_id disimpan di localStorage supaya riwayat v0.2 nyambung antar
+     kirim; backend mengembalikan session_id baru bila yang dikirim kosong.
+   - Header X-API-Key hanya dikirim bila VITE_API_KEY diisi (backend mengaktifkan
+     auth hanya bila API_KEY di .env backend terisi; kalau kosong, auth mati). */
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_KEY = import.meta.env.VITE_API_KEY || "";
+const SESSION_KEY = "cepirit_session_id";
+
+const getSessionId = () => {
+  try {
+    return localStorage.getItem(SESSION_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+const saveSessionId = (id) => {
+  if (!id) return;
+  try {
+    localStorage.setItem(SESSION_KEY, id);
+  } catch {
+    /* localStorage tidak tersedia: sesi jalan tanpa persistensi */
+  }
+};
+
 export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false }) {
   const [messages, setMessages] = useState(INITIAL);
   const [draft, setDraft] = useState("");
@@ -16,9 +44,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   const [replyTo, setReplyTo] = useState(null); // pesan yang dibalas
   const [sending, setSending] = useState(false); // balasan sedang diproses (avatar "working")
   const pressTimer = useRef(null);
-  const replyTimer = useRef(null);
 
-  const send = () => {
+  const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
     setDraft("");
@@ -26,17 +53,32 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     setMessages((m) => [...m, { role: "user", text }]);
     /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
     setSending(true);
-    clearTimeout(replyTimer.current);
-    replyTimer.current = setTimeout(() => {
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (API_KEY) headers["X-API-Key"] = API_KEY;
+      const res = await fetch(`${API_URL}/api/chat`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: text, session_id: getSessionId() }),
+      });
+      if (!res.ok) {
+        throw new Error(res.status === 401 ? "unauthorized" : `http-${res.status}`);
+      }
+      const data = await res.json();
+      if (data.session_id) saveSessionId(data.session_id);
       setMessages((m) => [
         ...m,
-        {
-          role: "asisten",
-          text: "Oke, aku terima pesanmu: \"" + text + "\". Ini demo UI ya — hubungkan ke backend LLM biar aku bisa jawab beneran.",
-        },
+        { role: "asisten", text: data.reply || "(backend tidak mengembalikan balasan)" },
       ]);
+    } catch (err) {
+      const errText =
+        err && err.message === "unauthorized"
+          ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu refresh halaman."
+          : "Gagal menghubungi backend. Pastikan backend jalan di http://localhost:8000 (uvicorn app.main:app --reload --port 8000), lalu kirim ulang pesanmu.";
+      setMessages((m) => [...m, { role: "asisten", text: errText }]);
+    } finally {
       setSending(false);
-    }, 1200);
+    }
   };
 
   /* Buka menu konteks (klik kanan / tahan lama) */
