@@ -74,7 +74,15 @@ function AppInner() {
     if (!chatPinned) setChatSide(false);
   };
   const sidebarOpen = chatPinned || chatSide; // sidebar percakapan (desktop)
-  const [rightOpen, setRightOpen] = useState(false); // panel kanan (desktop)
+  /* Panel kanan (profil VITY) terbuka sejak awal di desktop — seperti
+     sidebar profil di Muse; di HP tetap tertutup. */
+  const [rightOpen, setRightOpen] = useState(() => {
+    try {
+      return window.matchMedia("(min-width: 768px)").matches;
+    } catch {
+      return false;
+    }
+  });
   const [goals, setGoals] = useState([]);
   const [artifacts, setArtifacts] = useState([]);
   const [galeriFilter, setGaleriFilter] = useState("semua");
