@@ -50,9 +50,14 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
+    /* Kutipan balasan ikut tersimpan di pesan yang dikirim — jadi setelah
+       balasan asisten muncul pun, bubble ini tetap menunjukkan pesan apa
+       yang dibalas (bukan cuma pratinjau di atas kolom ketik). Disimpan
+       sebagai salinan teks, jadi tetap ada walau pesan aslinya dihapus. */
+    const quoted = replyTo;
     setDraft("");
     setReplyTo(null);
-    setMessages((m) => [...m, { role: "user", text }]);
+    setMessages((m) => [...m, { role: "user", text, replyTo: quoted ? { text: quoted.text, role: quoted.role } : null }]);
     /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
     setSending(true);
     try {
@@ -227,6 +232,16 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                   {...bubbleProps(idx)}
                   className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                 >
+                  {m.replyTo && (
+                    <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
+                      <div className="text-[12px] font-medium text-white/80">
+                        {m.replyTo.role === "asisten" ? "VITY" : "Kamu"}
+                      </div>
+                      <div className="text-[13px] text-white/70 line-clamp-2 whitespace-pre-wrap break-words">
+                        {m.replyTo.text}
+                      </div>
+                    </div>
+                  )}
                   {m.text}
                 </div>
               </div>
