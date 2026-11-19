@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import { VityAvatar, I } from "./ui";
 
+/* Sapaan awal: VITY memperkenalkan diri — bukan lagi contoh obrolan
+   soal harga LLM. */
 const INITIAL = [
-  { role: "user", text: "kalo untuk LLM ada harganya gk" },
   {
     role: "asisten",
-    text: "Ada, tapi beda model bisnisnya. Penting dulu dipahami: LLM itu nggak ngirim email — dia cuma nulis isi emailnya. Pengirimannya tetap lewat Gmail API/SMTP yang gratis tadi. Jadi biayanya cuma buat \"otak\" yang nulis teks.\n\nRata-rata LLM API itu bayar per token (satuan teks). Kisaran harganya per 1 juta token, kurang lebih:\n\n• Google Gemini Flash — ada tier gratis yang lumayan gede (1.500 request/hari), berbayarnya sekitar $0,10 input / $0,40 output\n• OpenAI GPT-4o mini — sekitar $0,15 / $0,60",
+    text: "Halo! Aku VITY, asisten virtual kamu.\n\nAku bisa bantu jawab pertanyaan, jelasin materi, sampai bantu ngerjain tugas. Tanya aja apa yang lagi kamu butuhin.",
   },
 ];
 
@@ -217,25 +218,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4 space-y-4" onClick={() => setMenu(null)}>
-        <div className="flex justify-end">
-          <div className="flex items-center gap-1">
-            <TombolAksi idx={0} />
-            <div
-              {...bubbleProps(0)}
-              className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
-            >
-              {INITIAL[0].text}
-            </div>
-          </div>
-        </div>
-
-        {messages.slice(1).map((m, i) =>
+        {messages.map((m, idx) =>
           m.role === "user" ? (
-            <div key={i} className="flex justify-end">
+            <div key={idx} className="flex justify-end">
               <div className="flex items-center gap-1">
-                <TombolAksi idx={i + 1} />
+                <TombolAksi idx={idx} />
                 <div
-                  {...bubbleProps(i + 1)}
+                  {...bubbleProps(idx)}
                   className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                 >
                   {m.text}
@@ -243,9 +232,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
               </div>
             </div>
           ) : (
-            <div key={i} className="flex justify-start">
+            <div key={idx} className="flex justify-start">
               <div
-                {...bubbleProps(i + 1)}
+                {...bubbleProps(idx)}
                 className="bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
               >
                 {m.text}
