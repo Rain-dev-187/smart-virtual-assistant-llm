@@ -10,13 +10,14 @@ const INITIAL = [
 ];
 
 /* Wiring backend issue #20: ChatScreen -> POST /api/chat.
-   - API_URL default http://localhost:8000 (backend uvicorn --port 8000);
-     override lewat VITE_API_URL di frontend/.env (lihat frontend/.env.example).
+   - API_URL default relatif (same origin); Vite memproxy /api ke backend
+     di localhost:8000, jadi HP satu WiFi cukup ketik Network URL.
+     Override lewat VITE_API_URL di frontend/.env bila backend di alamat lain.
    - session_id disimpan di localStorage supaya riwayat v0.2 nyambung antar
      kirim; backend mengembalikan session_id baru bila yang dikirim kosong.
    - Header X-API-Key hanya dikirim bila VITE_API_KEY diisi (backend mengaktifkan
      auth hanya bila API_KEY di .env backend terisi; kalau kosong, auth mati). */
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const API_KEY = import.meta.env.VITE_API_KEY || "";
 const SESSION_KEY = "vity_session_id";
 
@@ -74,7 +75,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       const errText =
         err && err.message === "unauthorized"
           ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu refresh halaman."
-          : "Gagal menghubungi backend. Pastikan backend jalan di http://localhost:8000 (uvicorn app.main:app --reload --port 8000), lalu kirim ulang pesanmu.";
+          : "Gagal menghubungi backend. Pastikan backend jalan (uvicorn app.main:app --reload --port 8000), lalu kirim ulang pesanmu.";
       setMessages((m) => [...m, { role: "asisten", text: errText }]);
     } finally {
       setSending(false);

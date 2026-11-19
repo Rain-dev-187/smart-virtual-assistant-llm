@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { SheetHeader, Toggle } from "./ui";
 
 /* Wiring backend issue #24: Kontrol data -> API riwayat chat.
-   - API_URL default http://localhost:8000 (backend uvicorn --port 8000);
-     override lewat VITE_API_URL di frontend/.env (lihat frontend/.env.example).
+   - API_URL default relatif (same origin); Vite memproxy /api ke backend
+     di localhost:8000. Override lewat VITE_API_URL bila backend di alamat lain.
    - session_id dibaca dari localStorage key yang sama dengan ChatScreen
      ("vity_session_id") supaya riwayat yang diunduh/dihapus adalah
      sesi yang sama dengan yang dipakai mengobrol.
@@ -12,7 +12,7 @@ import { SheetHeader, Toggle } from "./ui";
    - Toggle "Bantu sempurnakan model AI" tetap lokal: tidak ada endpoint
      backend untuk itu. "Impor memori" juga belum disambungkan (tidak ada
      endpoint impor di backend). */
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const API_KEY = import.meta.env.VITE_API_KEY || "";
 const SESSION_KEY = "vity_session_id";
 
@@ -69,7 +69,7 @@ export default function KontrolData({ onBack, bare = false }) {
         text:
           err && err.message === "unauthorized"
             ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu coba lagi."
-            : "Gagal mengunduh data. Pastikan backend jalan di http://localhost:8000, lalu coba lagi.",
+            : "Gagal mengunduh data. Pastikan backend jalan (uvicorn app.main:app --reload --port 8000), lalu coba lagi.",
       });
     } finally {
       setBusy(null);
@@ -112,7 +112,7 @@ export default function KontrolData({ onBack, bare = false }) {
         text:
           err && err.message === "unauthorized"
             ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu coba lagi."
-            : "Gagal menghapus riwayat. Pastikan backend jalan di http://localhost:8000, lalu coba lagi.",
+            : "Gagal menghapus riwayat. Pastikan backend jalan (uvicorn app.main:app --reload --port 8000), lalu coba lagi.",
       });
     } finally {
       setBusy(null);

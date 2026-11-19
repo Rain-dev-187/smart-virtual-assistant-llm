@@ -60,9 +60,11 @@ function loadLocalConfig() {
   return DEFAULT_AVATAR;
 }
 
-/* ---------- API client (fallback lokal bila backend mati) ---------- */
-
-const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+/* ---------- API client (fallback lokal bila backend mati) ----------
+   Default: API relatif (same origin) — Vite memproxy /api ke backend di
+   localhost:8000, jadi HP satu WiFi cukup ketik Network URL tanpa .env.
+   Isi VITE_API_URL hanya bila backend ada di alamat lain. */
+const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const API_KEY = import.meta.env.VITE_API_KEY || "";
 
 async function apiFetch(path, options) {
