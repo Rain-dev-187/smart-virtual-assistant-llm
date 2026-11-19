@@ -7,7 +7,7 @@ import Drawer from "./components/Drawer";
 import { MenuSheet } from "./components/SettingsMenu";
 import SettingsModal from "./components/SettingsModal";
 import { Artefak } from "./components/SmallScreens";
-import { Sheet, MobileTopBar, MobileTabBar } from "./components/ui";
+import { Sheet, SheetHeader, MobileTopBar, MobileTabBar } from "./components/ui";
 import {
   IconRail,
   GaleriSidebar,
@@ -154,9 +154,16 @@ function AppInner() {
       case "artefak-form":
         return <ArtefakForm onSubmit={addArtefak} onBack={back} />;
       case "profil":
+        /* Sheet profil HP tadinya tanpa tombol kembali — sheet-nya hampir
+           sepenuh layar (88vh) dan backdrop yang bisa diketuk tinggal
+           setrip kecil di atas, jadi pengguna terjebak di dalamnya.
+           SheetHeader (nempel di atas saat scroll) memberi jalan keluar. */
         return (
-          <div className="px-2 pt-2">
-            <ProfilVity onEditAvatar={() => openSheet("avatar")} />
+          <div>
+            <SheetHeader title="Profil" onBack={back} />
+            <div className="px-2 pt-2">
+              <ProfilVity onEditAvatar={() => openSheet("avatar")} />
+            </div>
           </div>
         );
       case "avatar":
