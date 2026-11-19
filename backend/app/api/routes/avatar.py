@@ -1,4 +1,4 @@
-"""Endpoint avatar CEPIRIT.
+"""Endpoint avatar VITY.
 
 - GET  /api/avatar/presets            daftar preset avatar
 - GET  /api/avatar/render             render SVG dari konfigurasi (query params)

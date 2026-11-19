@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { I, CepiritAvatar, SheetHeader } from "./ui";
+import { I, VityAvatar, SheetHeader } from "./ui";
 import Drawer from "./Drawer";
 
 /* ---------- Ikon SVG kecil ---------- */
@@ -33,7 +33,7 @@ export function IconRail({ view, onView, onOpenChatSide, onOpenSearch, onOpenMen
   return (
     <nav className="w-[68px] shrink-0 h-full border-r border-white/10 flex flex-col items-center py-4 gap-1.5 bg-[#171717]">
       <div className="mb-3">
-        <CepiritAvatar size={40} label={false} />
+        <VityAvatar size={40} label={false} />
       </div>
       <button className={btn(view === "chat")} onClick={() => { onView("chat"); onOpenChatSide(); }} title="Obrolan">
         {I.chat}
@@ -64,7 +64,7 @@ const SEARCH_RECENTS = [
     id: 1,
     kind: "chat",
     title: "Obrolan utama",
-    preview: "balikin cepirit ke tengah, header nya ubah jadi shadow aja",
+    preview: "balikin vity ke tengah, header nya ubah jadi shadow aja",
     time: "baru saja",
   },
   {
@@ -199,7 +199,7 @@ export function GaleriSidebar({ filter, onFilter }) {
   );
 }
 
-/* ---------- Konten profil CEPIRIT (dipakai panel kanan & sheet profil) ---------- */
+/* ---------- Konten profil VITY (dipakai panel kanan & sheet profil) ---------- */
 /* ---------- Ikon tambahan untuk panel profil ---------- */
 const CLOCK_ICON = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
@@ -238,7 +238,7 @@ const HARI_INI = [
 const RIWAYAT = [
   {
     judul: "Perform this action on your GitHub account",
-    desc: "Muse ingin memperbesar lagi ukuran avatar CEPIRIT untuk tampilan mobile.",
+    desc: "Muse ingin memperbesar lagi ukuran avatar VITY untuk tampilan mobile.",
     waktu: "Diizinkan • 3 menit yang lalu",
   },
   {
@@ -248,8 +248,8 @@ const RIWAYAT = [
   },
 ];
 
-/* ---------- Isi profil CEPIRIT (panel kanan) ---------- */
-export function ProfilCepirit({ onEditAvatar } = {}) {
+/* ---------- Isi profil VITY (panel kanan) ---------- */
+export function ProfilVity({ onEditAvatar } = {}) {
   const [tab, setTab] = useState(0);
   const tabs = [
     { icon: I.menu, label: "Hari ini" },
@@ -263,7 +263,7 @@ export function ProfilCepirit({ onEditAvatar } = {}) {
       {/* Header profil */}
       <div className="flex flex-col items-center">
         <div className="relative">
-          <CepiritAvatar size={96} label={false} />
+          <VityAvatar size={96} label={false} />
           <button
             onClick={onEditAvatar}
             title="Ganti avatar"
@@ -275,7 +275,7 @@ export function ProfilCepirit({ onEditAvatar } = {}) {
             </svg>
           </button>
         </div>
-        <div className="text-xl font-semibold mt-3">CEPIRIT</div>
+        <div className="text-xl font-semibold mt-3">VITY</div>
         <div className="text-gray-400 text-[14px] mt-1.5 flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-green-500" />
           Terhubung
@@ -355,7 +355,7 @@ export function ProfilCepirit({ onEditAvatar } = {}) {
       {/* Tab: Profil */}
       {tab === 3 && (
         <div>
-          <h3 className="text-[17px] font-semibold mt-6 mb-3">CEPIRIT</h3>
+          <h3 className="text-[17px] font-semibold mt-6 mb-3">VITY</h3>
           <button className="w-full bg-card hover:bg-card2 rounded-full py-2.5 text-[15px] text-white flex items-center justify-center gap-2 transition-colors">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
@@ -386,7 +386,7 @@ export function RightPanel({ onClose, onEditAvatar }) {
         <button onClick={onClose} className="text-gray-500 hover:text-white text-2xl leading-none" aria-label="Tutup panel">×</button>
       </div>
       <div className="mt-2">
-        <ProfilCepirit onEditAvatar={onEditAvatar} />
+        <ProfilVity onEditAvatar={onEditAvatar} />
       </div>
     </aside>
   );

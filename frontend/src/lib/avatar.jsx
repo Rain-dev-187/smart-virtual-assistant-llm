@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 /* ============================================================
-   Sistem avatar CEPIRIT
+   Sistem avatar VITY
    - Konfigurasi avatar: { body (hex), hat, accessory }
    - Disimpan di backend (PUT /api/avatar/{user}) bila backend aktif,
      selalu dicerminkan ke localStorage supaya tetap jalan offline.
-   - Semua CepiritAvatar tanpa prop config memakai konfigurasi global
+   - Semua VityAvatar tanpa prop config memakai konfigurasi global
      dari AvatarProvider ini.
    ============================================================ */
 
@@ -41,12 +41,12 @@ export const AVATAR_PRESETS = [
 
 export const DEFAULT_AVATAR = AVATAR_PRESETS[0].config;
 
-const LS_CONFIG = "cepirit_avatar";
-const LS_REQUESTS = "cepirit_avatar_requests";
+const LS_CONFIG = "vity_avatar";
+const LS_REQUESTS = "vity_avatar_requests";
 
 export function currentUserId() {
   try {
-    return localStorage.getItem("cepirit_user") || "demo";
+    return localStorage.getItem("vity_user") || "demo";
   } catch {
     return "demo";
   }

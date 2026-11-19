@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { CepiritAvatar, I } from "./ui";
+import { VityAvatar, I } from "./ui";
 
 const INITIAL = [
   { role: "user", text: "kalo untuk LLM ada harganya gk" },
@@ -18,7 +18,7 @@ const INITIAL = [
      auth hanya bila API_KEY di .env backend terisi; kalau kosong, auth mati). */
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 const API_KEY = import.meta.env.VITE_API_KEY || "";
-const SESSION_KEY = "cepirit_session_id";
+const SESSION_KEY = "vity_session_id";
 
 const getSessionId = () => {
   try {
@@ -165,8 +165,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         className={`pointer-events-none absolute top-0 inset-x-0 z-10 hidden md:block ${panelOpen ? "xl:hidden" : ""}`}
       >
         <div className="relative flex justify-center pt-3">
-          <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
-            <CepiritAvatar size={72} state={sending ? "working" : "idle"} />
+          <button onClick={onOpenProfile} aria-label="Lihat profil VITY" className="pointer-events-auto rounded-full animate-pop-in">
+            <VityAvatar size={72} state={sending ? "working" : "idle"} />
           </button>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         {/* Indikator progress: avatar mini lompat-lompat + titik mengetik */}
         {sending && (
           <div className="flex justify-start items-end gap-2">
-            <CepiritAvatar size={34} label={false} state="working" />
+            <VityAvatar size={34} label={false} state="working" />
             <div className="bg-card rounded-3xl rounded-bl-lg px-5 py-4 flex items-center gap-1.5">
               <span className="typing-dot w-2 h-2 rounded-full bg-gray-300 inline-block" />
               <span className="typing-dot typing-dot-2 w-2 h-2 rounded-full bg-gray-300 inline-block" />

@@ -13,7 +13,7 @@ export function MenuSheet({ onOpenSettings, onOpenLapor, onOpenAvatar, onClose }
       />
       <MenuRow
         icon={<span className="text-xl">🎨</span>}
-        title="Avatar CEPIRIT"
+        title="Avatar VITY"
         onClick={onOpenAvatar}
         right={null}
       />

@@ -1,6 +1,6 @@
-"""Render avatar CEPIRIT sebagai SVG standalone dari konfigurasi.
+"""Render avatar VITY sebagai SVG standalone dari konfigurasi.
 
-Geometri sama persis dengan komponen CepiritAvatar di frontend
+Geometri sama persis dengan komponen VityAvatar di frontend
 (viewBox 96x96) supaya hasil render konsisten di dua sisi.
 Dipakai endpoint GET /api/avatar/render — berguna untuk preview,
 gambar profil statis, atau dibagikan sebagai file .svg.

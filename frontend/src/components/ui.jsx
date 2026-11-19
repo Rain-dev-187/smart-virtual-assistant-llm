@@ -33,12 +33,12 @@ function AvatarHat({ hat }) {
   );
 }
 
-/* ---------- Avatar "CEPIRIT" animasi ----------
+/* ---------- Avatar "VITY" animasi ----------
    Props:
    - config: { body, hat, accessory } — bawaan: konfigurasi global user
    - state: "idle" (goyang pelan) | "working" (lompat-lompat saat progress berjalan)
 */
-export function CepiritAvatar({ size = 64, label = true, config, state = "idle" }) {
+export function VityAvatar({ size = 64, label = true, config, state = "idle" }) {
   const global = useAvatar();
   const cfg = { ...DEFAULT_AVATAR, ...(config || global.config) };
   const working = state === "working";
@@ -52,15 +52,15 @@ export function CepiritAvatar({ size = 64, label = true, config, state = "idle" 
           {/* bayangan bawah */}
           <ellipse cx="48" cy="88" rx="24" ry="4" fill="#000" opacity="0.25" />
           {/* kepala + topi: goyang pelan saat idle, lompat-lompat saat working */}
-          <g className={working ? "cepirit-bounce" : "cepirit-sway"}>
+          <g className={working ? "vity-bounce" : "vity-sway"}>
             <circle cx="48" cy="56" r="30" fill={cfg.body} />
             <ellipse cx="40" cy="46" rx="10" ry="6" fill="#fff" opacity="0.35" />
             <AvatarHat hat={cfg.hat} />
             {/* mata + pupil (kedip; pupil melirik, lebih cepat saat working) */}
-            <g className="cepirit-blink">
+            <g className="vity-blink">
               <circle cx="38" cy="58" r="7" fill="#fff" />
               <circle cx="58" cy="58" r="7" fill="#fff" />
-              <g className={`cepirit-look ${working ? "cepirit-look-fast" : ""}`}>
+              <g className={`vity-look ${working ? "vity-look-fast" : ""}`}>
                 <circle cx="38" cy="58" r="3.5" fill="#2b2b2b" />
                 <circle cx="58" cy="58" r="3.5" fill="#2b2b2b" />
                 <circle cx="39.2" cy="56.8" r="1.1" fill="#fff" />
@@ -85,15 +85,15 @@ export function CepiritAvatar({ size = 64, label = true, config, state = "idle" 
           {/* percikan bintang saat bekerja */}
           {working && (
             <>
-              <polygon className="cepirit-spark" points="14,26 16,32 22,34 16,36 14,42 12,36 6,34 12,32" fill="#ffd166" />
-              <polygon className="cepirit-spark cepirit-spark-2" points="82,52 83.5,57 88.5,58.5 83.5,60 82,65 80.5,60 75.5,58.5 80.5,57" fill="#ffd166" />
+              <polygon className="vity-spark" points="14,26 16,32 22,34 16,36 14,42 12,36 6,34 12,32" fill="#ffd166" />
+              <polygon className="vity-spark vity-spark-2" points="82,52 83.5,57 88.5,58.5 83.5,60 82,65 80.5,60 75.5,58.5 80.5,57" fill="#ffd166" />
             </>
           )}
         </svg>
       </div>
       {label && (
         <div className="mt-1 bg-card2 text-white text-sm font-medium px-4 py-1 rounded-full">
-          CEPIRIT
+          VITY
         </div>
       )}
     </div>
@@ -209,9 +209,9 @@ export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
         <button
           onClick={onOpenProfile}
           className="rounded-full animate-pop-in"
-          aria-label="Lihat profil CEPIRIT"
+          aria-label="Lihat profil VITY"
         >
-          <CepiritAvatar size={56} label={false} />
+          <VityAvatar size={56} label={false} />
         </button>
       ) : (
         <div className="w-[56px] shrink-0" />

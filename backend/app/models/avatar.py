@@ -1,4 +1,4 @@
-"""Model database untuk fitur avatar CEPIRIT.
+"""Model database untuk fitur avatar VITY.
 
 Dua tabel:
 - user_avatars    : konfigurasi avatar pilihan tiap user (satu baris per user)

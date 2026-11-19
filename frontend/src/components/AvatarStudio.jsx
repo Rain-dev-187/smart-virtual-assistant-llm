@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CepiritAvatar, SheetHeader } from "./ui";
+import { VityAvatar, SheetHeader } from "./ui";
 import {
   AVATAR_ACCESSORIES,
   AVATAR_BODY_COLORS,
@@ -126,7 +126,7 @@ export default function AvatarStudio({ onBack }) {
 
   return (
     <div>
-      <SheetHeader title="Avatar CEPIRIT" onBack={onBack} />
+      <SheetHeader title="Avatar VITY" onBack={onBack} />
 
       {/* Tab */}
       <div className="flex gap-1 mx-4 mt-1 bg-card2 rounded-full p-1">
@@ -150,7 +150,7 @@ export default function AvatarStudio({ onBack }) {
         <div className="px-5 pt-5">
           {/* Preview besar — beranimasi, lompat saat progress/tes */}
           <div className="flex flex-col items-center">
-            <CepiritAvatar size={128} label={false} config={draft} state={working ? "working" : "idle"} />
+            <VityAvatar size={128} label={false} config={draft} state={working ? "working" : "idle"} />
             {saving ? (
               <div className="w-52 mt-4">
                 <ProgressBar />
@@ -181,7 +181,7 @@ export default function AvatarStudio({ onBack }) {
                     active ? "bg-card2 border-accent" : "bg-card2/50 border-white/5 hover:border-white/20"
                   }`}
                 >
-                  <CepiritAvatar size={52} label={false} config={p.config} />
+                  <VityAvatar size={52} label={false} config={p.config} />
                   <span className="text-[13px] text-gray-200">{p.nama}</span>
                 </button>
               );
@@ -236,7 +236,7 @@ export default function AvatarStudio({ onBack }) {
       ) : (
         <div className="px-5 pt-5">
           <div className="flex items-start gap-3">
-            <CepiritAvatar size={56} label={false} state={sending ? "working" : "idle"} />
+            <VityAvatar size={56} label={false} state={sending ? "working" : "idle"} />
             <p className="text-[14px] text-gray-400 leading-relaxed">
               Mau avatar yang belum ada di preset? Ceritakan maunya kayak apa —
               misalnya warna, topi, atau tema khusus. Request-mu masuk antrean

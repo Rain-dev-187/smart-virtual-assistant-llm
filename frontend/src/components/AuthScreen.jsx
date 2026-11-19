@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { CepiritAvatar } from "./ui";
+import { VityAvatar } from "./ui";
 
 /* ================================================================
    Layar Login / Register ala Muse (passwordless, kode OTP):
@@ -10,7 +10,7 @@ import { CepiritAvatar } from "./ui";
    petunjuk demo supaya flow-nya bisa dicoba sampai masuk.
    ================================================================ */
 
-const LS_ACCOUNTS = "cepirit_accounts";
+const LS_ACCOUNTS = "vity_accounts";
 
 function loadAccounts() {
   try {
@@ -175,10 +175,10 @@ export default function AuthScreen({ onSuccess }) {
           <div className="w-full max-w-[430px] flex-1 flex flex-col">
             <div className="flex-1 flex flex-col items-center justify-center text-center pt-6 pb-10">
               <div className="animate-pop-in mb-7">
-                <CepiritAvatar size={76} label={false} state={sending ? "working" : "idle"} />
+                <VityAvatar size={76} label={false} state={sending ? "working" : "idle"} />
               </div>
               <h1 className="text-[32px] leading-[1.15] sm:text-[38px] font-semibold tracking-tight">
-                CEPIRIT, asisten AI
+                VITY, asisten AI
                 <br />
                 pribadi Anda
               </h1>
@@ -233,7 +233,7 @@ export default function AuthScreen({ onSuccess }) {
 
             <div className="flex-1 flex flex-col items-center text-center pt-8">
               <div className="animate-pop-in">
-                <CepiritAvatar size={64} label={false} />
+                <VityAvatar size={64} label={false} />
               </div>
 
               {step === "otp-login" ? (

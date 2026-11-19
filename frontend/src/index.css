@@ -37,8 +37,8 @@ body {
   animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Animasi logo CEPIRIT: kepala bergoyang kanan-kiri, pupil mata bergerak */
-@keyframes cepirit-sway {
+/* Animasi logo VITY: kepala bergoyang kanan-kiri, pupil mata bergerak */
+@keyframes vity-sway {
   from {
     transform: rotate(-7deg);
   }
@@ -46,12 +46,12 @@ body {
     transform: rotate(7deg);
   }
 }
-.cepirit-sway {
-  animation: cepirit-sway 3s ease-in-out infinite alternate;
+.vity-sway {
+  animation: vity-sway 3s ease-in-out infinite alternate;
   transform-box: fill-box;
   transform-origin: 50% 85%;
 }
-@keyframes cepirit-look {
+@keyframes vity-look {
   from {
     transform: translateX(-2.5px);
   }
@@ -59,15 +59,15 @@ body {
     transform: translateX(2.5px);
   }
 }
-.cepirit-look {
-  animation: cepirit-look 2.2s ease-in-out infinite alternate;
+.vity-look {
+  animation: vity-look 2.2s ease-in-out infinite alternate;
 }
-.cepirit-look-fast {
+.vity-look-fast {
   animation-duration: 0.55s;
 }
 
 /* Kedip mata */
-@keyframes cepirit-blink {
+@keyframes vity-blink {
   0%,
   92%,
   100% {
@@ -77,14 +77,14 @@ body {
     transform: scaleY(0.08);
   }
 }
-.cepirit-blink {
-  animation: cepirit-blink 4.4s ease-in-out infinite;
+.vity-blink {
+  animation: vity-blink 4.4s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
 
 /* Mode "working": avatar lompat-lompat selama progress berjalan */
-@keyframes cepirit-bounce {
+@keyframes vity-bounce {
   0%,
   100% {
     transform: translateY(0) scale(1, 1);
@@ -99,14 +99,14 @@ body {
     transform: translateY(-3px) scale(0.99, 1.01);
   }
 }
-.cepirit-bounce {
-  animation: cepirit-bounce 0.55s ease-in-out infinite;
+.vity-bounce {
+  animation: vity-bounce 0.55s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: 50% 100%;
 }
 
 /* Percikan bintang saat working */
-@keyframes cepirit-spark {
+@keyframes vity-spark {
   0%,
   100% {
     opacity: 0.15;
@@ -117,12 +117,12 @@ body {
     transform: scale(1.15);
   }
 }
-.cepirit-spark {
-  animation: cepirit-spark 0.9s ease-in-out infinite;
+.vity-spark {
+  animation: vity-spark 0.9s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
-.cepirit-spark-2 {
+.vity-spark-2 {
   animation-delay: 0.45s;
 }
 

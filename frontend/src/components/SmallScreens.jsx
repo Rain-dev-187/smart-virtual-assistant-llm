@@ -11,7 +11,7 @@ export function Dompet({ onBack, bare = false }) {
     <div>
       {!bare && <SheetHeader title="Dompet" onBack={onBack} />}
       <p className="px-5 mt-1 text-[17px] leading-relaxed">
-        Tambahkan metode pembayaran untuk mengizinkan CEPIRIT melakukan pembelian dan transaksi yang aman untuk Anda.
+        Tambahkan metode pembayaran untuk mengizinkan VITY melakukan pembelian dan transaksi yang aman untuk Anda.
       </p>
       <SectionTitle>Metode pembayaran</SectionTitle>
       <div className="mx-4 bg-card2 rounded-3xl divide-y divide-white/5">
@@ -49,7 +49,7 @@ export function Saluran({ onBack, bare = false }) {
 
 /* ---------- Bantuan & dukungan ---------- */
 export function Bantuan({ onBack, bare = false }) {
-  const rows = ["Pusat Bantuan CEPIRIT", "Kirimkan masukan"];
+  const rows = ["Pusat Bantuan VITY", "Kirimkan masukan"];
   return (
     <div>
       {!bare && <SheetHeader title="Bantuan & dukungan" onBack={onBack} />}
@@ -72,8 +72,8 @@ export function Bantuan({ onBack, bare = false }) {
 /* ---------- Info hukum ---------- */
 export function InfoHukum({ onBack, bare = false }) {
   const docs = [
-    "Kebijakan Privasi CEPIRIT",
-    "Ketentuan Tambahan CEPIRIT",
+    "Kebijakan Privasi VITY",
+    "Ketentuan Tambahan VITY",
     "Ketentuan Layanan Meta",
     "Kebijakan Privasi Meta",
     "Ketentuan Layanan Meta AI",

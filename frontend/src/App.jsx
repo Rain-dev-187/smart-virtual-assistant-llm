@@ -12,7 +12,7 @@ import {
   IconRail,
   GaleriSidebar,
   RightPanel,
-  ProfilCepirit,
+  ProfilVity,
   SearchModal,
   SasaranPage,
   GaleriPage,
@@ -27,8 +27,8 @@ function AppInner() {
   const [authed, setAuthed] = useState(() => {
     try {
       return (
-        localStorage.getItem("cepirit_authed") === "1" ||
-        sessionStorage.getItem("cepirit_authed") === "1"
+        localStorage.getItem("vity_authed") === "1" ||
+        sessionStorage.getItem("vity_authed") === "1"
       );
     } catch {
       return false;
@@ -36,16 +36,16 @@ function AppInner() {
   });
   const handleAuthSuccess = (identifier, remember) => {
     try {
-      if (remember) localStorage.setItem("cepirit_authed", "1");
-      else sessionStorage.setItem("cepirit_authed", "1");
-      localStorage.setItem("cepirit_user", identifier);
+      if (remember) localStorage.setItem("vity_authed", "1");
+      else sessionStorage.setItem("vity_authed", "1");
+      localStorage.setItem("vity_user", identifier);
     } catch {}
     setAuthed(true);
   };
   const handleLogout = () => {
     try {
-      localStorage.removeItem("cepirit_authed");
-      sessionStorage.removeItem("cepirit_authed");
+      localStorage.removeItem("vity_authed");
+      sessionStorage.removeItem("vity_authed");
     } catch {}
     setSettingsOpen(false);
     setAuthed(false);
@@ -56,7 +56,7 @@ function AppInner() {
   const [chatSide, setChatSide] = useState(false);
   const [chatPinned, setChatPinned] = useState(() => {
     try {
-      return localStorage.getItem("cepirit_chat_pinned") === "1";
+      return localStorage.getItem("vity_chat_pinned") === "1";
     } catch {
       return false;
     }
@@ -65,7 +65,7 @@ function AppInner() {
     setChatPinned((p) => {
       const next = !p;
       try {
-        localStorage.setItem("cepirit_chat_pinned", next ? "1" : "0");
+        localStorage.setItem("vity_chat_pinned", next ? "1" : "0");
       } catch {}
       return next;
     });
@@ -148,7 +148,7 @@ function AppInner() {
       case "profil":
         return (
           <div className="px-2 pt-2">
-            <ProfilCepirit onEditAvatar={() => openSheet("avatar")} />
+            <ProfilVity onEditAvatar={() => openSheet("avatar")} />
           </div>
         );
       case "avatar":

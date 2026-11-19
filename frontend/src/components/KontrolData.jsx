@@ -5,7 +5,7 @@ import { SheetHeader, Toggle } from "./ui";
    - API_URL default http://localhost:8000 (backend uvicorn --port 8000);
      override lewat VITE_API_URL di frontend/.env (lihat frontend/.env.example).
    - session_id dibaca dari localStorage key yang sama dengan ChatScreen
-     ("cepirit_session_id") supaya riwayat yang diunduh/dihapus adalah
+     ("vity_session_id") supaya riwayat yang diunduh/dihapus adalah
      sesi yang sama dengan yang dipakai mengobrol.
    - Header X-API-Key hanya dikirim bila VITE_API_KEY diisi (backend
      mengaktifkan auth hanya bila API_KEY di .env backend terisi).
@@ -14,7 +14,7 @@ import { SheetHeader, Toggle } from "./ui";
      endpoint impor di backend). */
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 const API_KEY = import.meta.env.VITE_API_KEY || "";
-const SESSION_KEY = "cepirit_session_id";
+const SESSION_KEY = "vity_session_id";
 
 const getSessionId = () => {
   try {
@@ -56,7 +56,7 @@ export default function KontrolData({ onBack, bare = false }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `cepirit-data-${sessionId}.json`;
+      a.download = `vity-data-${sessionId}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -83,7 +83,7 @@ export default function KontrolData({ onBack, bare = false }) {
       setStatus({ kind: "info", text: "Belum ada riwayat obrolan untuk dihapus." });
       return;
     }
-    if (!window.confirm("Hapus seluruh riwayat obrolan CEPIRIT secara permanen?")) return;
+    if (!window.confirm("Hapus seluruh riwayat obrolan VITY secara permanen?")) return;
     setBusy("reset");
     setStatus(null);
     try {
@@ -139,7 +139,7 @@ export default function KontrolData({ onBack, bare = false }) {
         <Toggle checked={bantu} onChange={setBantu} />
       </div>
       <p className="px-5 mt-2 text-gray-400 text-[14px] leading-relaxed">
-        Izinkan kami menggunakan interaksi Anda dengan CEPIRIT untuk mengembangkan dan menyempurnakan AI di Meta.
+        Izinkan kami menggunakan interaksi Anda dengan VITY untuk mengembangkan dan menyempurnakan AI di Meta.
       </p>
 
       <div className="mx-4 mt-4 bg-card2 rounded-3xl divide-y divide-white/5">
@@ -163,11 +163,11 @@ export default function KontrolData({ onBack, bare = false }) {
 
       <div className="mx-4 mt-4 bg-card2 rounded-3xl p-5">
         <button onClick={aturUlang} disabled={busy !== null} className="text-danger text-[17px] disabled:opacity-60">
-          {busy === "reset" ? "Menghapus…" : "Atur ulang CEPIRIT"}
+          {busy === "reset" ? "Menghapus…" : "Atur ulang VITY"}
         </button>
       </div>
       <p className="px-5 mt-2 text-gray-400 text-[14px] leading-relaxed">
-        Menghapus data CEPIRIT Anda secara permanen, termasuk riwayat obrolan, file, dan tugas aktif.
+        Menghapus data VITY Anda secara permanen, termasuk riwayat obrolan, file, dan tugas aktif.
       </p>
 
       {status && (

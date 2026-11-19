@@ -30,7 +30,7 @@ Test:
 pytest tests/ -v
 ```
 
-## Fitur avatar CEPIRIT
+## Fitur avatar VITY
 
 Avatar bisa diganti user dan dianimasikan. Saat ada progress berjalan
 (chat diproses, kode dikirim, avatar disimpan) frontend menampilkan
