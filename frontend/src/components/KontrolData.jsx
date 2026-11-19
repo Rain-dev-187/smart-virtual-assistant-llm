@@ -1,8 +1,123 @@
 import React, { useState } from "react";
 import { SheetHeader, Toggle } from "./ui";
 
+/* Wiring backend issue #24: Kontrol data -> API riwayat chat.
+   - API_URL default http://localhost:8000 (backend uvicorn --port 8000);
+     override lewat VITE_API_URL di frontend/.env (lihat frontend/.env.example).
+   - session_id dibaca dari localStorage key yang sama dengan ChatScreen
+     ("cepirit_session_id") supaya riwayat yang diunduh/dihapus adalah
+     sesi yang sama dengan yang dipakai mengobrol.
+   - Header X-API-Key hanya dikirim bila VITE_API_KEY diisi (backend
+     mengaktifkan auth hanya bila API_KEY di .env backend terisi).
+   - Toggle "Bantu sempurnakan model AI" tetap lokal: tidak ada endpoint
+     backend untuk itu. "Impor memori" juga belum disambungkan (tidak ada
+     endpoint impor di backend). */
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_KEY = import.meta.env.VITE_API_KEY || "";
+const SESSION_KEY = "cepirit_session_id";
+
+const getSessionId = () => {
+  try {
+    return localStorage.getItem(SESSION_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+const apiHeaders = () => {
+  const headers = { "Content-Type": "application/json" };
+  if (API_KEY) headers["X-API-Key"] = API_KEY;
+  return headers;
+};
+
 export default function KontrolData({ onBack, bare = false }) {
   const [bantu, setBantu] = useState(true);
+  const [busy, setBusy] = useState(null); // null | "unduh" | "reset"
+  const [status, setStatus] = useState(null); // { kind: "ok" | "error" | "info", text }
+
+  /* Unduh riwayat chat sesi ini sebagai file JSON */
+  const unduhData = async () => {
+    const sessionId = getSessionId();
+    if (!sessionId) {
+      setStatus({ kind: "info", text: "Belum ada data obrolan untuk diunduh — kirim pesan di Chat dulu." });
+      return;
+    }
+    setBusy("unduh");
+    setStatus(null);
+    try {
+      const res = await fetch(`${API_URL}/api/chat/history/${encodeURIComponent(sessionId)}`, {
+        headers: apiHeaders(),
+      });
+      if (!res.ok) {
+        throw new Error(res.status === 401 ? "unauthorized" : `http-${res.status}`);
+      }
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cepirit-data-${sessionId}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      const jumlah = Array.isArray(data.messages) ? data.messages.length : 0;
+      setStatus({ kind: "ok", text: `Data obrolan berhasil diunduh (${jumlah} pesan).` });
+    } catch (err) {
+      setStatus({
+        kind: "error",
+        text:
+          err && err.message === "unauthorized"
+            ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu coba lagi."
+            : "Gagal mengunduh data. Pastikan backend jalan di http://localhost:8000, lalu coba lagi.",
+      });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  /* Hapus riwayat chat sesi ini di backend (minta konfirmasi dulu) */
+  const aturUlang = async () => {
+    const sessionId = getSessionId();
+    if (!sessionId) {
+      setStatus({ kind: "info", text: "Belum ada riwayat obrolan untuk dihapus." });
+      return;
+    }
+    if (!window.confirm("Hapus seluruh riwayat obrolan CEPIRIT secara permanen?")) return;
+    setBusy("reset");
+    setStatus(null);
+    try {
+      const res = await fetch(`${API_URL}/api/chat/history/${encodeURIComponent(sessionId)}`, {
+        method: "DELETE",
+        headers: apiHeaders(),
+      });
+      if (!res.ok) {
+        throw new Error(res.status === 401 ? "unauthorized" : `http-${res.status}`);
+      }
+      const data = await res.json();
+      /* Sesi sudah dihapus di backend; buang juga session_id lokal supaya
+         obrolan berikutnya mulai sesi baru yang bersih. */
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch { /* abaikan */ }
+      setStatus({
+        kind: "ok",
+        text: data.deleted === false
+          ? "Riwayat sudah kosong — tidak ada yang dihapus."
+          : "Riwayat obrolan berhasil dihapus.",
+      });
+    } catch (err) {
+      setStatus({
+        kind: "error",
+        text:
+          err && err.message === "unauthorized"
+            ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu coba lagi."
+            : "Gagal menghapus riwayat. Pastikan backend jalan di http://localhost:8000, lalu coba lagi.",
+      });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <div>
@@ -34,8 +149,12 @@ export default function KontrolData({ onBack, bare = false }) {
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
-        <button className="w-full flex items-center justify-between p-5 text-[17px]">
-          Unduh data agen Anda
+        <button
+          onClick={unduhData}
+          disabled={busy !== null}
+          className="w-full flex items-center justify-between p-5 text-[17px] disabled:opacity-60"
+        >
+          {busy === "unduh" ? "Mengunduh…" : "Unduh data agen Anda"}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.2" strokeLinecap="round">
             <polyline points="9 18 15 12 9 6" />
           </svg>
@@ -43,11 +162,27 @@ export default function KontrolData({ onBack, bare = false }) {
       </div>
 
       <div className="mx-4 mt-4 bg-card2 rounded-3xl p-5">
-        <button className="text-danger text-[17px]">Atur ulang CEPIRIT</button>
+        <button onClick={aturUlang} disabled={busy !== null} className="text-danger text-[17px] disabled:opacity-60">
+          {busy === "reset" ? "Menghapus…" : "Atur ulang CEPIRIT"}
+        </button>
       </div>
       <p className="px-5 mt-2 text-gray-400 text-[14px] leading-relaxed">
         Menghapus data CEPIRIT Anda secara permanen, termasuk riwayat obrolan, file, dan tugas aktif.
       </p>
+
+      {status && (
+        <p
+          className={`mx-4 mt-3 rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
+            status.kind === "ok"
+              ? "bg-green-500/10 text-green-400"
+              : status.kind === "error"
+                ? "bg-red-500/10 text-red-400"
+                : "bg-white/5 text-gray-300"
+          }`}
+        >
+          {status.text}
+        </p>
+      )}
     </div>
   );
 }

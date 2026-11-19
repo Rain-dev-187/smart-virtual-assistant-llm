@@ -50,6 +50,27 @@ export default function AvatarStudio({ onBack }) {
   const [desc, setDesc] = useState("");
   const [sending, setSending] = useState(false);
   const [requests, setRequests] = useState(loadLocalRequests);
+  /* Preset dari backend (GET /api/avatar/presets); bila backend mati atau
+     datanya tidak valid, pakai daftar preset lokal di lib/avatar. */
+  const [presets, setPresets] = useState(AVATAR_PRESETS);
+
+  useEffect(() => {
+    avatarApi
+      .fetchPresets()
+      .then((list) => {
+        const valid =
+          Array.isArray(list) &&
+          list.length > 0 &&
+          list.every(
+            (p) =>
+              p && typeof p.key === "string" && typeof p.nama === "string" &&
+              p.config && typeof p.config.body === "string" &&
+              typeof p.config.hat === "string" && typeof p.config.accessory === "string"
+          );
+        if (valid) setPresets(list);
+      })
+      .catch(() => { /* pakai preset lokal */ });
+  }, []);
 
   /* Muat daftar request dari backend bila aktif */
   useEffect(() => {
@@ -150,7 +171,7 @@ export default function AvatarStudio({ onBack }) {
           {/* Preset */}
           <div className="mt-6 text-[13px] uppercase tracking-wide text-gray-500">Preset</div>
           <div className="grid grid-cols-3 gap-2 mt-2">
-            {AVATAR_PRESETS.map((p) => {
+            {presets.map((p) => {
               const active = JSON.stringify(p.config) === JSON.stringify(draft);
               return (
                 <button

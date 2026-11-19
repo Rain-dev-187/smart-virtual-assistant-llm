@@ -62,11 +62,17 @@ function loadLocalConfig() {
 
 /* ---------- API client (fallback lokal bila backend mati) ---------- */
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_KEY = import.meta.env.VITE_API_KEY || "";
 
 async function apiFetch(path, options) {
+  /* Header X-API-Key hanya dikirim bila VITE_API_KEY diisi — pola yang sama
+     dengan ChatScreen (issue #20). Endpoint avatar v0.2 tidak mewajibkan
+     auth, tapi header ini tidak mengganggu bila backend mengaktifkannya. */
+  const headers = { "Content-Type": "application/json" };
+  if (API_KEY) headers["X-API-Key"] = API_KEY;
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...options,
   });
   if (!res.ok) throw new Error(`API ${res.status}`);
@@ -74,6 +80,9 @@ async function apiFetch(path, options) {
 }
 
 export const avatarApi = {
+  async fetchPresets() {
+    return apiFetch("/api/avatar/presets");
+  },
   async fetchConfig(userId) {
     const data = await apiFetch(`/api/avatar/${encodeURIComponent(userId)}`);
     return data.config;
