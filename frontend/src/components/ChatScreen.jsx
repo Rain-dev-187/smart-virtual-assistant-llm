@@ -91,7 +91,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   /* Buka menu konteks (klik kanan / tahan lama) */
   const openMenu = (clientX, clientY, idx) => {
     setPicker(null);
-    const w = 190, h = 148;
+    const w = 190, h = 128;
     const x = Math.min(clientX, window.innerWidth - w - 12);
     const y = Math.min(clientY, window.innerHeight - h - 12);
     setMenu({ x, y, idx });
@@ -198,8 +198,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     setConfirmHapus(null);
   };
 
-  /* Balas dari tombol di samping bubble. */
+  /* Balas / Salin / Hapus langsung dari tombol di samping bubble sendiri. */
   const aksiBalas = (idx) => setReplyTo(messages[idx]);
+  const aksiSalin = async (idx) => {
+    const m = messages[idx];
+    if (m) showToast((await copyText(m.text)) ? "Pesan disalin" : "Gagal menyalin");
+  };
+  const aksiHapus = (idx) => setConfirmHapus(idx);
 
   const bubbleProps = (idx) => ({
     onContextMenu: (e) => onContextMenu(e, idx),
@@ -209,19 +214,23 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     className: "select-none",
   });
 
-  /* Aksi pesan ala Muse: Tanggapi (reaksi emoji), Balas, dan menu ⋯
-     (Salin / Bagikan / Hapus). Di desktop muncul saat bubble di-hover,
-     di layar sentuh selalu terlihat. */
-  const AksiPesan = ({ idx }) => (
+  /* Aksi pesan ala Muse — beda per pengirim:
+     - Pesan VITY: Tanggapi (reaksi emoji), Balas, menu ⋯ (Salin / Bagikan).
+       Tidak ada Hapus: pesan VITY tidak bisa dihapus.
+     - Pesan sendiri: Balas, Salin, Hapus langsung, tanpa titik tiga.
+     Di desktop muncul saat bubble di-hover, di layar sentuh selalu terlihat. */
+  const AksiPesan = ({ idx, isUser }) => (
     <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
-      <button
-        onClick={(e) => openPicker(e.clientX, e.clientY, idx)}
-        title="Tanggapi"
-        aria-label="Tanggapi"
-        className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
-      </button>
+      {!isUser && (
+        <button
+          onClick={(e) => openPicker(e.clientX, e.clientY, idx)}
+          title="Tanggapi"
+          aria-label="Tanggapi"
+          className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+        </button>
+      )}
       <button
         onClick={() => aksiBalas(idx)}
         title="Balas"
@@ -230,14 +239,35 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       >
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
       </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); openMenu(e.clientX, e.clientY, idx); }}
-        title="Lainnya"
-        aria-label="Lainnya"
-        className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>
-      </button>
+      {isUser ? (
+        <>
+          <button
+            onClick={() => aksiSalin(idx)}
+            title="Salin"
+            aria-label="Salin"
+            className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+          </button>
+          <button
+            onClick={() => aksiHapus(idx)}
+            title="Hapus"
+            aria-label="Hapus"
+            className="w-8 h-8 rounded-full text-gray-500 hover:text-red-400 hover:bg-white/10 flex items-center justify-center"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={(e) => { e.stopPropagation(); openMenu(e.clientX, e.clientY, idx); }}
+          title="Lainnya"
+          aria-label="Lainnya"
+          className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>
+        </button>
+      )}
     </div>
   );
 
@@ -262,10 +292,10 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           m.role === "user" ? (
             <div key={idx} className="flex justify-end group">
               <div className="flex items-center gap-1">
-                <AksiPesan idx={idx} />
+                <AksiPesan idx={idx} isUser />
                 <div
                   {...bubbleProps(idx)}
-                  className="relative bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                  className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                 >
                   {m.replyTo && (
                     <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
@@ -278,15 +308,6 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                     </div>
                   )}
                   {m.text}
-                  {m.reaction && (
-                    <button
-                      onClick={() => hapusReaksi(idx)}
-                      title="Hapus reaksi"
-                      className="absolute -bottom-3 right-3 rounded-full bg-card2 border border-white/10 px-2 py-0.5 text-[13px] leading-none shadow"
-                    >
-                      {m.reaction}
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
@@ -328,7 +349,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
       </div>
 
-      {/* Menu ⋯ / konteks pesan: Salin / Bagikan / Hapus */}
+      {/* Menu ⋯ / konteks pesan — isi beda per pengirim:
+          VITY = Salin / Bagikan, pesan sendiri = Salin / Hapus */}
       {menu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
@@ -341,14 +363,18 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
               Salin
             </button>
-            <button onClick={doBagikan} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-              Bagikan
-            </button>
-            <button onClick={doHapus} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-red-400 hover:bg-white/10">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-              Hapus
-            </button>
+            {messages[menu.idx]?.role === "asisten" && (
+              <button onClick={doBagikan} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                Bagikan
+              </button>
+            )}
+            {messages[menu.idx]?.role === "user" && (
+              <button onClick={doHapus} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-red-400 hover:bg-white/10">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                Hapus
+              </button>
+            )}
           </div>
         </>
       )}
