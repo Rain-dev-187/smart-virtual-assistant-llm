@@ -100,14 +100,57 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   const onTouchEnd = () => clearTimeout(pressTimer.current);
   const onTouchMove = () => clearTimeout(pressTimer.current);
 
-  const doSalin = () => {
+  /* Salin teks — navigator.clipboard hanya ada di konteks aman (https /
+     localhost), jadi di HP lewat IP LAN (http) clipboard tidak ada dan
+     tombol salin diam-diam tidak bekerja. Fallback: textarea sementara +
+     execCommand("copy") yang jalan di konteks biasa. */
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const showToast = (text) => {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 1800);
+  };
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch { /* lanjut ke fallback */ }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "0";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
+  /* Hapus pesan minta konfirmasi dulu (dialog Batal / Hapus). */
+  const [confirmHapus, setConfirmHapus] = useState(null); // index pesan atau null
+
+  const doSalin = async () => {
     const m = messages[menu.idx];
-    if (m && navigator.clipboard) navigator.clipboard.writeText(m.text).catch(() => {});
     setMenu(null);
+    if (m) showToast((await copyText(m.text)) ? "Pesan disalin" : "Gagal menyalin");
   };
   const doHapus = () => {
-    setMessages((msgs) => msgs.filter((_, i) => i !== menu.idx));
+    setConfirmHapus(menu.idx);
     setMenu(null);
+  };
+  const hapusPesan = () => {
+    setMessages((msgs) => msgs.filter((_, i) => i !== confirmHapus));
+    setConfirmHapus(null);
   };
   const doBalas = () => {
     setReplyTo(messages[menu.idx]);
@@ -116,11 +159,11 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   /* Aksi langsung dari tombol di sebelah bubble */
   const aksiBalas = (idx) => setReplyTo(messages[idx]);
-  const aksiSalin = (idx) => {
+  const aksiSalin = async (idx) => {
     const m = messages[idx];
-    if (m && navigator.clipboard) navigator.clipboard.writeText(m.text).catch(() => {});
+    if (m) showToast((await copyText(m.text)) ? "Pesan disalin" : "Gagal menyalin");
   };
-  const aksiHapus = (idx) => setMessages((msgs) => msgs.filter((_, i) => i !== idx));
+  const aksiHapus = (idx) => setConfirmHapus(idx);
 
   const bubbleProps = (idx) => ({
     onContextMenu: (e) => onContextMenu(e, idx),
@@ -248,6 +291,45 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
             </button>
           </div>
         </>
+      )}
+
+      {/* Konfirmasi hapus pesan */}
+      {confirmHapus !== null && messages[confirmHapus] && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+          onClick={() => setConfirmHapus(null)}
+        >
+          <div
+            className="bg-card2 rounded-3xl p-5 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-[17px] font-medium">Hapus pesan?</div>
+            <p className="text-gray-400 text-[15px] mt-2 leading-relaxed line-clamp-3">
+              {messages[confirmHapus].text}
+            </p>
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setConfirmHapus(null)}
+                className="flex-1 py-2.5 rounded-full bg-white/10 text-white text-[15px]"
+              >
+                Batal
+              </button>
+              <button
+                onClick={hapusPesan}
+                className="flex-1 py-2.5 rounded-full bg-danger text-white text-[15px]"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Umpan balik salin (toast singkat) */}
+      {toast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-white text-black text-[14px] px-4 py-2 rounded-full shadow-xl whitespace-nowrap">
+          {toast}
+        </div>
       )}
 
       {/* Input bar — flex child di bawah area chat (tidak ikut scroll).
