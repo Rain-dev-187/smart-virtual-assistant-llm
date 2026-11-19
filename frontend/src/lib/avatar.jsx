@@ -109,6 +109,24 @@ export const avatarApi = {
   },
 };
 
+/* ---------- Favicon tab mengikuti avatar ---------- */
+/* Ikon kecil di tab browser diganti ke URL gambar avatar (renderUrl),
+   jadi ikut berubah tiap avatar diganti. Bila backend mati, href tetap
+   ditulis — browser menampilkan ikon terakhir / ikon bawaan. */
+function updateFavicon(config) {
+  try {
+    const href = avatarApi.renderUrl(config);
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      link.type = "image/svg+xml";
+      document.head.appendChild(link);
+    }
+    if (link.getAttribute("href") !== href) link.setAttribute("href", href);
+  } catch { /* abaikan */ }
+}
+
 export function loadLocalRequests() {
   try {
     return JSON.parse(localStorage.getItem(LS_REQUESTS) || "[]");
@@ -159,6 +177,12 @@ export function AvatarProvider({ children }) {
     /* Simpan ke backend juga (best effort) */
     avatarApi.saveConfig(currentUserId(), merged).catch(() => {});
   };
+
+  /* Favicon tab mengikuti config — jalan saat pertama dimuat, tiap
+     avatar diganti, dan tiap sinkron dari backend selesai. */
+  useEffect(() => {
+    updateFavicon(config);
+  }, [config]);
 
   return (
     <AvatarCtx.Provider value={{ config, setConfig }}>
