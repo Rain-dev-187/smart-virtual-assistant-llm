@@ -179,7 +179,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     className: "select-none",
   });
 
-  /* 3 tombol aksi di sebelah bubble sendiri */
+  /* 3 tombol aksi di sebelah bubble (pesan sendiri & pesan VITY) */
   const TombolAksi = ({ idx }) => (
     <div className="flex flex-col gap-1 mr-1 shrink-0">
       <button
@@ -248,11 +248,14 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
             </div>
           ) : (
             <div key={idx} className="flex justify-start">
-              <div
-                {...bubbleProps(idx)}
-                className="bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
-              >
-                {m.text}
+              <div className="flex items-center gap-1">
+                <div
+                  {...bubbleProps(idx)}
+                  className="bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
+                >
+                  {m.text}
+                </div>
+                <TombolAksi idx={idx} />
               </div>
             </div>
           )
