@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { DEFAULT_AVATAR, useAvatar } from "../lib/avatar";
 
 /* ---------- Bagian topi avatar ---------- */
@@ -100,18 +100,79 @@ export function VityAvatar({ size = 64, label = true, config, state = "idle" }) 
   );
 }
 
-/* ---------- Bottom sheet generik (jadi modal tengah di desktop) ---------- */
+/* ---------- Bottom sheet generik (jadi modal tengah di desktop) ----------
+   Bisa ditutup dengan geser ke bawah (swipe down): tarik dari gagang /
+   bar atas, atau dari mana pun saat konten sudah di posisi paling atas.
+   Kalau konten masih ter-scroll, geser ke bawah mengembalikan scroll dulu.
+   Lewat ambang 100px, sheet meluncur keluar lalu menutup. */
 export function Sheet({ children, onClose, labelled = true }) {
+  const panelRef = useRef(null);
+  const scrollRef = useRef(null);
+  const drag = useRef({ active: false, startY: 0, grab: false, pulledDy: 0 });
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef(null);
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  const onTouchStart = (e) => {
+    if (closing) return;
+    const y = e.touches[0].clientY;
+    const rect = panelRef.current ? panelRef.current.getBoundingClientRect() : null;
+    drag.current = { active: true, startY: y, grab: rect ? y - rect.top < 60 : false, pulledDy: 0 };
+    setDragging(true);
+  };
+  const onTouchMove = (e) => {
+    const d = drag.current;
+    if (!d.active || closing) return;
+    const dy = e.touches[0].clientY - d.startY;
+    const scroller = scrollRef.current;
+    if (dy > 0 && (d.grab || (scroller && scroller.scrollTop <= 0))) {
+      /* Ikuti jari ke bawah (tanpa preventDefault: listener React pasif) */
+      d.pulledDy = dy;
+      setDragY(dy);
+    } else if (dy <= 0) {
+      d.pulledDy = 0;
+      if (dragY !== 0) setDragY(0);
+    }
+  };
+  const onTouchEnd = () => {
+    const d = drag.current;
+    if (!d.active) return;
+    d.active = false;
+    setDragging(false);
+    if (d.pulledDy > 100) {
+      setClosing(true);
+      setDragY(window.innerHeight);
+      closeTimer.current = setTimeout(onClose, 200);
+    } else {
+      setDragY(0);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-6">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full max-w-md md:max-w-lg bg-card rounded-t-3xl md:rounded-3xl max-h-[88vh] md:max-h-[85vh] flex flex-col overflow-hidden">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-md md:max-w-lg bg-card rounded-t-3xl md:rounded-3xl max-h-[88vh] md:max-h-[85vh] flex flex-col overflow-hidden"
+        style={{
+          transform: dragY ? `translateY(${dragY}px)` : undefined,
+          transition: dragging ? "none" : "transform 200ms ease-out",
+        }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         {labelled && (
           <div className="pt-3 pb-1 flex justify-center shrink-0 md:hidden">
             <div className="w-10 h-1 rounded-full bg-gray-600" />
           </div>
         )}
-        <div className="overflow-y-auto no-scrollbar pb-8">{children}</div>
+        <div ref={scrollRef} className="overflow-y-auto no-scrollbar pb-8">{children}</div>
       </div>
     </div>
   );
