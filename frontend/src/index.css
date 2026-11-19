@@ -12,6 +12,9 @@ body {
   color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Halaman seolah aplikasi: mentok di tepi scroll chat jangan sampai
+     menarik/mengangkat seluruh halaman (rubber-band) di HP. */
+  overscroll-behavior: none;
 }
 
 .no-scrollbar::-webkit-scrollbar {

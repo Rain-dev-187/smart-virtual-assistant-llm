@@ -194,10 +194,13 @@ const MENU_3 = (
   </svg>
 );
 
-/* ---------- Bar atas mobile (fixed, tidak ikut scroll) ---------- */
+/* ---------- Bar atas mobile (flex child, bukan fixed) ----------
+   Dulu fixed top-0: saat toolbar browser HP muncul/hilang atau keyboard
+   buka-tutup, bar ini dan konten 100dvh tidak sepakat soal "atas" — halaman
+   terasa ngangkat/lompat. Sekarang ikut alur flex kolom App. */
 export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
   return (
-    <div className="md:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between px-2 pt-1">
+    <div className="md:hidden shrink-0 flex items-center justify-between px-2 pt-1">
       <button
         onClick={onOpenDrawer}
         className="w-11 h-11 flex items-center justify-center text-white"
@@ -221,7 +224,10 @@ export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
   );
 }
 
-/* ---------- Tab bar bawah (mobile) ---------- */
+/* ---------- Tab bar bawah (mobile) ----------
+   Dulu fixed bottom-0: alasan yang sama dengan MobileTopBar — fixed dan
+   konten 100dvh berdebat soal "bawah" saat toolbar/keyboard berubah,
+   tab bar melayang dengan ruang kosong di bawahnya. Sekarang flex child. */
 const tabCheck = (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 11 12 14 22 4" />
@@ -237,7 +243,7 @@ export function MobileTabBar({ view, onView, onOpenMenu }) {
   ];
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-20 flex justify-around px-8 pt-2"
+      className="md:hidden shrink-0 flex justify-around px-8 pt-2 bg-[#171717]"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {tabs.map((t) => {

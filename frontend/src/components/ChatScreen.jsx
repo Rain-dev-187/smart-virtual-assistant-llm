@@ -173,7 +173,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
 
       {/* Area chat */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-14 pb-32 md:pt-4 md:pb-4 space-y-4" onClick={() => setMenu(null)}>
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4 space-y-4" onClick={() => setMenu(null)}>
         <div className="flex justify-end">
           <div className="flex items-center gap-1">
             <TombolAksi idx={0} />
@@ -250,8 +250,12 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         </>
       )}
 
-      {/* Input bar — fixed di mobile (tidak ikut scroll), normal di desktop */}
-      <div className="fixed bottom-16 inset-x-0 z-10 px-4 pb-3 pt-2 md:static md:z-auto md:shrink-0 md:pb-6 md:inset-auto">
+      {/* Input bar — flex child di bawah area chat (tidak ikut scroll).
+          Dulu fixed bottom-16: saat toolbar browser HP muncul/hilang atau
+          keyboard buka-tutup, posisinya melayang terpisah dari tab bar
+          (ruang kosong di bawah) — halaman terasa ngangkat. Sekarang
+          menempel langsung di atas tab bar, ikut alur flex. */}
+      <div className="shrink-0 px-4 pb-3 pt-2 md:pb-6">
         {replyTo && (
           <div className="mb-2 mx-1 flex items-center gap-3 bg-card2 rounded-2xl px-4 py-2.5 border-l-4 border-accent">
             <div className="flex-1 min-w-0">
