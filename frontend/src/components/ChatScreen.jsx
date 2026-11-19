@@ -90,6 +90,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
   /* Buka menu konteks (klik kanan / tahan lama) */
   const openMenu = (clientX, clientY, idx) => {
+    setPicker(null);
     const w = 190, h = 148;
     const x = Math.min(clientX, window.innerWidth - w - 12);
     const y = Math.min(clientY, window.innerHeight - h - 12);
@@ -145,10 +146,48 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   /* Hapus pesan minta konfirmasi dulu (dialog Batal / Hapus). */
   const [confirmHapus, setConfirmHapus] = useState(null); // index pesan atau null
 
+  /* Reaksi emoji ala Muse: satu reaksi per pesan, ketuk emoji yang sama
+     untuk melepas. Picker dibuka dari tombol Tanggapi di samping bubble. */
+  const EMOJI_REAKSI = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+  const [picker, setPicker] = useState(null); // {x, y, idx} atau null
+  const openPicker = (clientX, clientY, idx) => {
+    setMenu(null);
+    const w = 264, h = 52;
+    const x = Math.max(8, Math.min(clientX - w / 2, window.innerWidth - w - 8));
+    const y = clientY - h - 12 < 8 ? clientY + 12 : clientY - h - 12;
+    setPicker({ x, y, idx });
+  };
+  const pilihReaksi = (emoji) => {
+    if (!picker) return;
+    const idx = picker.idx;
+    setMessages((ms) => ms.map((mm, i) => (i === idx ? { ...mm, reaction: mm.reaction === emoji ? null : emoji } : mm)));
+    setPicker(null);
+  };
+  const hapusReaksi = (idx) => {
+    setMessages((ms) => ms.map((mm, i) => (i === idx ? { ...mm, reaction: null } : mm)));
+  };
+
   const doSalin = async () => {
     const m = messages[menu.idx];
     setMenu(null);
     if (m) showToast((await copyText(m.text)) ? "Pesan disalin" : "Gagal menyalin");
+  };
+  /* Bagikan: lembar berbagi bawaan HP/browser; kalau tidak tersedia
+     (misal http IP LAN), fallback salin teks + toast. */
+  const doBagikan = async () => {
+    const m = messages[menu.idx];
+    setMenu(null);
+    if (!m) return;
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: m.text });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+      /* lanjut ke fallback */
+    }
+    showToast((await copyText(m.text)) ? "Teks disalin — tempel untuk membagikan" : "Gagal membagikan");
   };
   const doHapus = () => {
     setConfirmHapus(menu.idx);
@@ -158,18 +197,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     setMessages((msgs) => msgs.filter((_, i) => i !== confirmHapus));
     setConfirmHapus(null);
   };
-  const doBalas = () => {
-    setReplyTo(messages[menu.idx]);
-    setMenu(null);
-  };
 
-  /* Aksi langsung dari tombol di sebelah bubble */
+  /* Balas dari tombol di samping bubble. */
   const aksiBalas = (idx) => setReplyTo(messages[idx]);
-  const aksiSalin = async (idx) => {
-    const m = messages[idx];
-    if (m) showToast((await copyText(m.text)) ? "Pesan disalin" : "Gagal menyalin");
-  };
-  const aksiHapus = (idx) => setConfirmHapus(idx);
 
   const bubbleProps = (idx) => ({
     onContextMenu: (e) => onContextMenu(e, idx),
@@ -179,29 +209,34 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     className: "select-none",
   });
 
-  /* 3 tombol aksi di sebelah bubble (pesan sendiri & pesan VITY) */
-  const TombolAksi = ({ idx }) => (
-    <div className="flex flex-col gap-1 mr-1 shrink-0">
+  /* Aksi pesan ala Muse: Tanggapi (reaksi emoji), Balas, dan menu ⋯
+     (Salin / Bagikan / Hapus). Di desktop muncul saat bubble di-hover,
+     di layar sentuh selalu terlihat. */
+  const AksiPesan = ({ idx }) => (
+    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
+      <button
+        onClick={(e) => openPicker(e.clientX, e.clientY, idx)}
+        title="Tanggapi"
+        aria-label="Tanggapi"
+        className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+      </button>
       <button
         onClick={() => aksiBalas(idx)}
         title="Balas"
+        aria-label="Balas"
         className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
       </button>
       <button
-        onClick={() => aksiSalin(idx)}
-        title="Salin"
+        onClick={(e) => { e.stopPropagation(); openMenu(e.clientX, e.clientY, idx); }}
+        title="Lainnya"
+        aria-label="Lainnya"
         className="w-8 h-8 rounded-full text-gray-500 hover:text-white hover:bg-white/10 flex items-center justify-center"
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-      </button>
-      <button
-        onClick={() => aksiHapus(idx)}
-        title="Hapus"
-        className="w-8 h-8 rounded-full text-gray-500 hover:text-red-400 hover:bg-white/10 flex items-center justify-center"
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>
       </button>
     </div>
   );
@@ -225,12 +260,12 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4 space-y-4" onClick={() => setMenu(null)}>
         {messages.map((m, idx) =>
           m.role === "user" ? (
-            <div key={idx} className="flex justify-end">
+            <div key={idx} className="flex justify-end group">
               <div className="flex items-center gap-1">
-                <TombolAksi idx={idx} />
+                <AksiPesan idx={idx} />
                 <div
                   {...bubbleProps(idx)}
-                  className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                  className="relative bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                 >
                   {m.replyTo && (
                     <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
@@ -243,19 +278,37 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                     </div>
                   )}
                   {m.text}
+                  {m.reaction && (
+                    <button
+                      onClick={() => hapusReaksi(idx)}
+                      title="Hapus reaksi"
+                      className="absolute -bottom-3 right-3 rounded-full bg-card2 border border-white/10 px-2 py-0.5 text-[13px] leading-none shadow"
+                    >
+                      {m.reaction}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ) : (
-            <div key={idx} className="flex justify-start">
+            <div key={idx} className="flex justify-start group">
               <div className="flex items-center gap-1">
                 <div
                   {...bubbleProps(idx)}
-                  className="bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
+                  className="relative bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
                 >
                   {m.text}
+                  {m.reaction && (
+                    <button
+                      onClick={() => hapusReaksi(idx)}
+                      title="Hapus reaksi"
+                      className="absolute -bottom-3 left-3 rounded-full bg-card2 border border-white/10 px-2 py-0.5 text-[13px] leading-none shadow"
+                    >
+                      {m.reaction}
+                    </button>
+                  )}
                 </div>
-                <TombolAksi idx={idx} />
+                <AksiPesan idx={idx} />
               </div>
             </div>
           )
@@ -275,7 +328,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
       </div>
 
-      {/* Menu konteks pesan: Balas / Salin / Hapus */}
+      {/* Menu ⋯ / konteks pesan: Salin / Bagikan / Hapus */}
       {menu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
@@ -284,18 +337,39 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
             style={{ left: menu.x, top: menu.y }}
           >
             <div className="px-4 py-1.5 text-[12px] text-gray-500">Hari ini jam {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</div>
-            <button onClick={doBalas} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
-              Balas
-            </button>
             <button onClick={doSalin} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
               Salin
+            </button>
+            <button onClick={doBagikan} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+              Bagikan
             </button>
             <button onClick={doHapus} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-red-400 hover:bg-white/10">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
               Hapus
             </button>
+          </div>
+        </>
+      )}
+
+      {/* Picker reaksi emoji */}
+      {picker && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setPicker(null)} />
+          <div
+            className="fixed z-50 flex items-center gap-1 rounded-full bg-card2 border border-white/10 px-2 py-1.5 shadow-2xl"
+            style={{ left: picker.x, top: picker.y }}
+          >
+            {EMOJI_REAKSI.map((e) => (
+              <button
+                key={e}
+                onClick={() => pilihReaksi(e)}
+                className="w-9 h-9 rounded-full text-[20px] hover:bg-white/10 flex items-center justify-center"
+              >
+                {e}
+              </button>
+            ))}
           </div>
         </>
       )}
@@ -332,7 +406,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         </div>
       )}
 
-      {/* Umpan balik salin (toast singkat) */}
+      {/* Umpan balik salin/bagikan (toast singkat) */}
       {toast && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-white text-black text-[14px] px-4 py-2 rounded-full shadow-xl whitespace-nowrap">
           {toast}
