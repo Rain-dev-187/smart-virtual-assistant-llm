@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { I, VityAvatar, SheetHeader } from "./ui";
 import Drawer from "./Drawer";
+import { getDisplayName, setDisplayName, avatarApi, useAvatar } from "../lib/avatar";
 
 /* ---------- Ikon SVG kecil ---------- */
 const sw = { fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
@@ -248,9 +249,84 @@ const RIWAYAT = [
   },
 ];
 
+/* Salin teks — navigator.clipboard hanya ada di konteks aman, jadi di HP
+   lewat IP LAN (http) pakai fallback textarea + execCommand. */
+const salinTeks = async (text) => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* lanjut ke fallback */ }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+};
+
 /* ---------- Isi profil VITY (panel kanan) ---------- */
 export function ProfilVity({ onEditAvatar } = {}) {
   const [tab, setTab] = useState(0);
+  const [nama, setNama] = useState(getDisplayName());
+  const { config } = useAvatar();
+  const [menuPensil, setMenuPensil] = useState(false);
+  const [dialogNama, setDialogNama] = useState(false);
+  const [namaBaru, setNamaBaru] = useState("");
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  /* Nama bisa diubah dari panel mana pun (desktop + sheet HP) — sinkron
+     lewat event yang disiarkan setDisplayName. */
+  useEffect(() => {
+    const onNama = (e) => setNama((e && e.detail) || getDisplayName());
+    window.addEventListener("vity:display-name", onNama);
+    return () => window.removeEventListener("vity:display-name", onNama);
+  }, []);
+
+  const tampilToast = (text) => {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 1800);
+  };
+
+  const bukaDialogNama = () => {
+    setMenuPensil(false);
+    setNamaBaru(nama);
+    setDialogNama(true);
+  };
+  const simpanNama = () => {
+    setNama(setDisplayName(namaBaru));
+    setDialogNama(false);
+  };
+
+  /* Bagikan avatar: lembar berbagi bawaan HP/browser; kalau tidak tersedia
+     (misal http IP LAN), fallback salin tautan gambar avatar. */
+  const bagikanAvatar = async () => {
+    setMenuPensil(false);
+    const url = avatarApi.renderUrl(config);
+    try {
+      if (navigator.share) {
+        await navigator.share({ url });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+    tampilToast((await salinTeks(url)) ? "Tautan avatar disalin" : "Gagal membagikan avatar");
+  };
+
   const tabs = [
     { icon: I.menu, label: "Hari ini" },
     { icon: I.shield, label: "Persetujuan" },
@@ -265,17 +341,46 @@ export function ProfilVity({ onEditAvatar } = {}) {
         <div className="relative">
           <VityAvatar size={96} label={false} />
           <button
-            onClick={onEditAvatar}
-            title="Ganti avatar"
-            aria-label="Ganti avatar"
+            onClick={() => setMenuPensil((v) => !v)}
+            title="Opsi avatar"
+            aria-label="Opsi avatar"
             className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-card2 border-2 border-[#171717] flex items-center justify-center text-gray-300 hover:text-white"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
             </svg>
           </button>
+          {/* Menu pensil ala Muse: Ubah avatar / Edit nama / Bagikan avatar */}
+          {menuPensil && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuPensil(false)} />
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 w-[210px] bg-card2 rounded-2xl py-2 shadow-2xl border border-white/10">
+                <button
+                  onClick={() => { setMenuPensil(false); onEditAvatar && onEditAvatar(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10"
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                  Ubah avatar
+                </button>
+                <button
+                  onClick={bukaDialogNama}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10"
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" /></svg>
+                  Edit nama
+                </button>
+                <button
+                  onClick={bagikanAvatar}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10"
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                  Bagikan avatar
+                </button>
+              </div>
+            </>
+          )}
         </div>
-        <div className="text-xl font-semibold mt-3">VITY</div>
+        <div className="text-xl font-semibold mt-3">{nama}</div>
         <div className="text-gray-400 text-[14px] mt-1.5 flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-green-500" />
           Terhubung
@@ -355,8 +460,8 @@ export function ProfilVity({ onEditAvatar } = {}) {
       {/* Tab: Profil */}
       {tab === 3 && (
         <div>
-          <h3 className="text-[17px] font-semibold mt-6 mb-3">VITY</h3>
-          <button className="w-full bg-card hover:bg-card2 rounded-full py-2.5 text-[15px] text-white flex items-center justify-center gap-2 transition-colors">
+          <h3 className="text-[17px] font-semibold mt-6 mb-3">{nama}</h3>
+          <button onClick={bukaDialogNama} className="w-full bg-card hover:bg-card2 rounded-full py-2.5 text-[15px] text-white flex items-center justify-center gap-2 transition-colors">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
             </svg>
@@ -372,6 +477,51 @@ export function ProfilVity({ onEditAvatar } = {}) {
               <div className="text-[11px] text-white/90 leading-tight">AKSES DENGAN HATI-HATI</div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Dialog edit nama asisten */}
+      {dialogNama && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+          onClick={() => setDialogNama(false)}
+        >
+          <div
+            className="bg-card2 rounded-3xl p-5 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-[17px] font-medium">Edit nama</div>
+            <input
+              value={namaBaru}
+              onChange={(e) => setNamaBaru(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && simpanNama()}
+              placeholder="Nama asisten"
+              maxLength={30}
+              autoFocus
+              className="w-full mt-4 bg-card rounded-2xl px-4 py-3 text-[16px] text-white placeholder-gray-500 outline-none border border-white/10 focus:border-accent"
+            />
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setDialogNama(false)}
+                className="flex-1 py-2.5 rounded-full bg-white/10 text-white text-[15px]"
+              >
+                Batal
+              </button>
+              <button
+                onClick={simpanNama}
+                className="flex-1 py-2.5 rounded-full bg-accent text-white text-[15px]"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Umpan balik bagikan avatar (toast singkat) */}
+      {toast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-white text-black text-[14px] px-4 py-2 rounded-full shadow-xl whitespace-nowrap">
+          {toast}
         </div>
       )}
     </div>

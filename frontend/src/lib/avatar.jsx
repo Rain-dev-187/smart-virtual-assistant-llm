@@ -52,6 +52,33 @@ export function currentUserId() {
   }
 }
 
+/* ---------- Nama tampilan asisten ---------- */
+/* Default "VITY"; bisa diubah lewat "Edit nama" di menu pensil profil.
+   Disimpan di localStorage dan disiarkan lewat event supaya panel profil
+   dan sapaan chat ikut berubah tanpa reload. */
+const LS_NAMA = "vity_display_name";
+export const NAMA_DEFAULT = "VITY";
+export function getDisplayName() {
+  try {
+    return localStorage.getItem(LS_NAMA) || NAMA_DEFAULT;
+  } catch {
+    return NAMA_DEFAULT;
+  }
+}
+export function setDisplayName(nama) {
+  const bersih = (nama || "").trim() || NAMA_DEFAULT;
+  try {
+    localStorage.setItem(LS_NAMA, bersih);
+  } catch { /* abaikan */ }
+  try {
+    window.dispatchEvent(new CustomEvent("vity:display-name", { detail: bersih }));
+  } catch { /* abaikan */ }
+  return bersih;
+}
+export function teksSapaan(nama) {
+  return `Halo! Aku ${nama}, asisten virtual kamu.\n\nAku bisa bantu jawab pertanyaan, jelasin materi, sampai bantu ngerjain tugas. Tanya aja apa yang lagi kamu butuhin.`;
+}
+
 function loadLocalConfig() {
   try {
     const raw = localStorage.getItem(LS_CONFIG);

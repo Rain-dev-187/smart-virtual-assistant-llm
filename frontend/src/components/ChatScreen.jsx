@@ -1,12 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { VityAvatar, I } from "./ui";
+import { getDisplayName, teksSapaan } from "../lib/avatar";
 
-/* Sapaan awal: VITY memperkenalkan diri — bukan lagi contoh obrolan
-   soal harga LLM. */
+/* Sapaan awal: asisten memperkenalkan diri — bukan lagi contoh obrolan
+   soal harga LLM. Nama mengikuti "Edit nama" di profil. */
 const INITIAL = [
   {
     role: "asisten",
-    text: "Halo! Aku VITY, asisten virtual kamu.\n\nAku bisa bantu jawab pertanyaan, jelasin materi, sampai bantu ngerjain tugas. Tanya aja apa yang lagi kamu butuhin.",
+    sapaan: true,
+    text: teksSapaan(getDisplayName()),
   },
 ];
 
@@ -46,6 +48,20 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   const [replyTo, setReplyTo] = useState(null); // pesan yang dibalas
   const [sending, setSending] = useState(false); // balasan sedang diproses (avatar "working")
   const pressTimer = useRef(null);
+
+  /* Nama tampilan asisten (bisa diubah lewat "Edit nama" di profil):
+     dipakai label kutipan balasan + sapaan awal. */
+  const [namaAsisten, setNamaAsisten] = useState(getDisplayName());
+  useEffect(() => {
+    const onNama = (e) => {
+      const nama = (e && e.detail) || getDisplayName();
+      setNamaAsisten(nama);
+      /* Sapaan awal ikut nama baru (selama masih jadi pesan pertama) */
+      setMessages((ms) => (ms.length && ms[0].sapaan ? [{ ...ms[0], text: teksSapaan(nama) }, ...ms.slice(1)] : ms));
+    };
+    window.addEventListener("vity:display-name", onNama);
+    return () => window.removeEventListener("vity:display-name", onNama);
+  }, []);
 
   const send = async () => {
     const text = draft.trim();
@@ -91,7 +107,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   /* Buka menu konteks (klik kanan / tahan lama) */
   const openMenu = (clientX, clientY, idx) => {
     setPicker(null);
-    const w = 190, h = 128;
+    const w = 220, h = 230;
     const x = Math.min(clientX, window.innerWidth - w - 12);
     const y = Math.min(clientY, window.innerHeight - h - 12);
     setMenu({ x, y, idx });
@@ -172,6 +188,16 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     setMenu(null);
     if (m) showToast((await copyText(m.text)) ? "Pesan disalin" : "Gagal menyalin");
   };
+  const doBalas = () => {
+    setReplyTo(messages[menu.idx]);
+    setMenu(null);
+  };
+  /* Reaksi dari dalam menu (dipakai tombol titik tiga di HP) */
+  const reaksiDariMenu = (emoji) => {
+    const idx = menu.idx;
+    setMessages((ms) => ms.map((mm, i) => (i === idx ? { ...mm, reaction: mm.reaction === emoji ? null : emoji } : mm)));
+    setMenu(null);
+  };
   /* Bagikan: lembar berbagi bawaan HP/browser; kalau tidak tersedia
      (misal http IP LAN), fallback salin teks + toast. */
   const doBagikan = async () => {
@@ -214,13 +240,27 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     className: "select-none",
   });
 
+  /* Titik tiga di bawah bubble — cuma di layar sentuh (HP). Di desktop
+     tombol aksi muncul saat bubble di-hover, jadi titik ini disembunyikan. */
+  const TombolTitik = ({ idx, className = "mt-1.5" }) => (
+    <button
+      onClick={(e) => { e.stopPropagation(); openMenu(e.clientX, e.clientY, idx); }}
+      title="Opsi pesan"
+      aria-label="Opsi pesan"
+      className={`hidden [@media(hover:none)]:flex ${className} w-7 h-5 items-center justify-center text-gray-500`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>
+    </button>
+  );
+
   /* Aksi pesan ala Muse — beda per pengirim:
      - Pesan VITY: Tanggapi (reaksi emoji), Balas, menu ⋯ (Salin / Bagikan).
        Tidak ada Hapus: pesan VITY tidak bisa dihapus.
      - Pesan sendiri: Balas, Salin, Hapus langsung, tanpa titik tiga.
-     Di desktop muncul saat bubble di-hover, di layar sentuh selalu terlihat. */
+     Di desktop muncul saat bubble di-hover; di layar sentuh disembunyikan
+     (diganti titik tiga di bawah bubble). */
   const AksiPesan = ({ idx, isUser }) => (
-    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
+    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 [@media(hover:none)]:hidden transition-opacity">
       {!isUser && (
         <button
           onClick={(e) => openPicker(e.clientX, e.clientY, idx)}
@@ -291,45 +331,51 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
         {messages.map((m, idx) =>
           m.role === "user" ? (
             <div key={idx} className="flex justify-end group">
-              <div className="flex items-center gap-1">
-                <AksiPesan idx={idx} isUser />
-                <div
-                  {...bubbleProps(idx)}
-                  className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
-                >
-                  {m.replyTo && (
-                    <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
-                      <div className="text-[12px] font-medium text-white/80">
-                        {m.replyTo.role === "asisten" ? "VITY" : "Kamu"}
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1">
+                  <AksiPesan idx={idx} isUser />
+                  <div
+                    {...bubbleProps(idx)}
+                    className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                  >
+                    {m.replyTo && (
+                      <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
+                        <div className="text-[12px] font-medium text-white/80">
+                          {m.replyTo.role === "asisten" ? namaAsisten : "Kamu"}
+                        </div>
+                        <div className="text-[13px] text-white/70 line-clamp-2 whitespace-pre-wrap break-words">
+                          {m.replyTo.text}
+                        </div>
                       </div>
-                      <div className="text-[13px] text-white/70 line-clamp-2 whitespace-pre-wrap break-words">
-                        {m.replyTo.text}
-                      </div>
-                    </div>
-                  )}
-                  {m.text}
+                    )}
+                    {m.text}
+                  </div>
                 </div>
+                <TombolTitik idx={idx} />
               </div>
             </div>
           ) : (
             <div key={idx} className="flex justify-start group">
-              <div className="flex items-center gap-1">
-                <div
-                  {...bubbleProps(idx)}
-                  className="relative bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
-                >
-                  {m.text}
-                  {m.reaction && (
-                    <button
-                      onClick={() => hapusReaksi(idx)}
-                      title="Hapus reaksi"
-                      className="absolute -bottom-3 left-3 rounded-full bg-card2 border border-white/10 px-2 py-0.5 text-[13px] leading-none shadow"
-                    >
-                      {m.reaction}
-                    </button>
-                  )}
+              <div className="flex flex-col items-start">
+                <div className="flex items-center gap-1">
+                  <div
+                    {...bubbleProps(idx)}
+                    className="relative bg-card text-white rounded-3xl rounded-bl-lg px-5 py-4 max-w-[92%] text-[17px] whitespace-pre-wrap leading-relaxed select-none cursor-pointer"
+                  >
+                    {m.text}
+                    {m.reaction && (
+                      <button
+                        onClick={() => hapusReaksi(idx)}
+                        title="Hapus reaksi"
+                        className="absolute -bottom-3 left-3 rounded-full bg-card2 border border-white/10 px-2 py-0.5 text-[13px] leading-none shadow"
+                      >
+                        {m.reaction}
+                      </button>
+                    )}
+                  </div>
+                  <AksiPesan idx={idx} />
                 </div>
-                <AksiPesan idx={idx} />
+                <TombolTitik idx={idx} className={m.reaction ? "mt-4" : "mt-1.5"} />
               </div>
             </div>
           )
@@ -350,15 +396,34 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
 
       {/* Menu ⋯ / konteks pesan — isi beda per pengirim:
-          VITY = Salin / Bagikan, pesan sendiri = Salin / Hapus */}
+          VITY = reaksi + Balas / Salin / Bagikan, pesan sendiri = Balas / Salin / Hapus.
+          Di HP menu ini dibuka dari titik tiga di bawah bubble (satu-satunya
+          tombol aksi yang terlihat di layar sentuh). */}
       {menu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
           <div
-            className="fixed z-50 w-[190px] bg-card2 rounded-2xl py-2 shadow-2xl border border-white/10"
+            className="fixed z-50 w-[220px] bg-card2 rounded-2xl py-2 shadow-2xl border border-white/10"
             style={{ left: menu.x, top: menu.y }}
           >
             <div className="px-4 py-1.5 text-[12px] text-gray-500">Hari ini jam {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</div>
+            {messages[menu.idx]?.role === "asisten" && (
+              <div className="flex items-center gap-1 px-2 pt-1 pb-2">
+                {EMOJI_REAKSI.map((e) => (
+                  <button
+                    key={e}
+                    onClick={() => reaksiDariMenu(e)}
+                    className="w-7 h-7 rounded-full text-[17px] hover:bg-white/10 flex items-center justify-center"
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button onClick={doBalas} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>
+              Balas
+            </button>
             <button onClick={doSalin} className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-white/10">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
               Salin
