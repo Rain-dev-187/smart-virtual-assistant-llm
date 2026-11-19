@@ -9,26 +9,76 @@ const INITIAL = [
   },
 ];
 
+/* Wiring backend issue #20: ChatScreen -> POST /api/chat.
+   - API_URL default http://localhost:8000 (backend uvicorn --port 8000);
+     override lewat VITE_API_URL di frontend/.env (lihat frontend/.env.example).
+   - session_id disimpan di localStorage supaya riwayat v0.2 nyambung antar
+     kirim; backend mengembalikan session_id baru bila yang dikirim kosong.
+   - Header X-API-Key hanya dikirim bila VITE_API_KEY diisi (backend mengaktifkan
+     auth hanya bila API_KEY di .env backend terisi; kalau kosong, auth mati). */
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_KEY = import.meta.env.VITE_API_KEY || "";
+const SESSION_KEY = "cepirit_session_id";
+
+const getSessionId = () => {
+  try {
+    return localStorage.getItem(SESSION_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+const saveSessionId = (id) => {
+  if (!id) return;
+  try {
+    localStorage.setItem(SESSION_KEY, id);
+  } catch {
+    /* localStorage tidak tersedia: sesi jalan tanpa persistensi */
+  }
+};
+
 export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false }) {
   const [messages, setMessages] = useState(INITIAL);
   const [draft, setDraft] = useState("");
   const [menu, setMenu] = useState(null); // {x, y, idx}
   const [replyTo, setReplyTo] = useState(null); // pesan yang dibalas
+  const [sending, setSending] = useState(false); // balasan sedang diproses (avatar "working")
   const pressTimer = useRef(null);
 
-  const send = () => {
+  const send = async () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || sending) return;
     setDraft("");
     setReplyTo(null);
-    setMessages((m) => [
-      ...m,
-      { role: "user", text },
-      {
-        role: "asisten",
-        text: "Oke, aku terima pesanmu: \"" + text + "\". Ini demo UI ya — hubungkan ke backend LLM biar aku bisa jawab beneran.",
-      },
-    ]);
+    setMessages((m) => [...m, { role: "user", text }]);
+    /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
+    setSending(true);
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (API_KEY) headers["X-API-Key"] = API_KEY;
+      const res = await fetch(`${API_URL}/api/chat`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: text, session_id: getSessionId() }),
+      });
+      if (!res.ok) {
+        throw new Error(res.status === 401 ? "unauthorized" : `http-${res.status}`);
+      }
+      const data = await res.json();
+      if (data.session_id) saveSessionId(data.session_id);
+      setMessages((m) => [
+        ...m,
+        { role: "asisten", text: data.reply || "(backend tidak mengembalikan balasan)" },
+      ]);
+    } catch (err) {
+      const errText =
+        err && err.message === "unauthorized"
+          ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu refresh halaman."
+          : "Gagal menghubungi backend. Pastikan backend jalan di http://localhost:8000 (uvicorn app.main:app --reload --port 8000), lalu kirim ulang pesanmu.";
+      setMessages((m) => [...m, { role: "asisten", text: errText }]);
+    } finally {
+      setSending(false);
+    }
   };
 
   /* Buka menu konteks (klik kanan / tahan lama) */
@@ -116,7 +166,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       >
         <div className="relative flex justify-center pt-3">
           <button onClick={onOpenProfile} aria-label="Lihat profil CEPIRIT" className="pointer-events-auto rounded-full animate-pop-in">
-            <CepiritAvatar size={72} />
+            <CepiritAvatar size={72} state={sending ? "working" : "idle"} />
           </button>
         </div>
       </div>
@@ -158,6 +208,18 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
               </div>
             </div>
           )
+        )}
+
+        {/* Indikator progress: avatar mini lompat-lompat + titik mengetik */}
+        {sending && (
+          <div className="flex justify-start items-end gap-2">
+            <CepiritAvatar size={34} label={false} state="working" />
+            <div className="bg-card rounded-3xl rounded-bl-lg px-5 py-4 flex items-center gap-1.5">
+              <span className="typing-dot w-2 h-2 rounded-full bg-gray-300 inline-block" />
+              <span className="typing-dot typing-dot-2 w-2 h-2 rounded-full bg-gray-300 inline-block" />
+              <span className="typing-dot typing-dot-3 w-2 h-2 rounded-full bg-gray-300 inline-block" />
+            </div>
+          </div>
         )}
 
       </div>
@@ -208,7 +270,8 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           />
           <button
             onClick={send}
-            className="w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shrink-0"
+            disabled={sending}
+            className="w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50"
             aria-label="Kirim"
           >
             {I.send}

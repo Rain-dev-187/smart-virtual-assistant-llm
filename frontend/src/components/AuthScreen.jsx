@@ -103,6 +103,7 @@ export default function AuthScreen({ onSuccess }) {
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [sending, setSending] = useState(false); // kode sedang "dikirim" (avatar working)
 
   const isRegistered = loadAccounts().includes(identifier.trim());
 
@@ -116,12 +117,18 @@ export default function AuthScreen({ onSuccess }) {
   };
 
   const submitIdentifier = () => {
+    if (sending) return;
     if (!isValidId(identifier)) {
       setError("Masukkan email yang valid atau nomor ponsel (min. 9 digit).");
       return;
     }
     setError("");
-    sendCode(isRegistered ? "otp-login" : "otp-daftar");
+    /* Simulasi pengiriman kode: avatar beranimasi "working" selama progress */
+    setSending(true);
+    setTimeout(() => {
+      setSending(false);
+      sendCode(isRegistered ? "otp-login" : "otp-daftar");
+    }, 900);
   };
 
   const resend = () => {
@@ -168,7 +175,7 @@ export default function AuthScreen({ onSuccess }) {
           <div className="w-full max-w-[430px] flex-1 flex flex-col">
             <div className="flex-1 flex flex-col items-center justify-center text-center pt-6 pb-10">
               <div className="animate-pop-in mb-7">
-                <CepiritAvatar size={76} label={false} />
+                <CepiritAvatar size={76} label={false} state={sending ? "working" : "idle"} />
               </div>
               <h1 className="text-[32px] leading-[1.15] sm:text-[38px] font-semibold tracking-tight">
                 CEPIRIT, asisten AI
@@ -193,10 +200,16 @@ export default function AuthScreen({ onSuccess }) {
                 </p>
                 <button
                   onClick={submitIdentifier}
-                  className="mt-6 w-full h-14 rounded-full bg-accent text-white text-[16px] font-medium active:scale-[0.99] transition-transform"
+                  disabled={sending}
+                  className="mt-6 w-full h-14 rounded-full bg-accent text-white text-[16px] font-medium active:scale-[0.99] transition-transform disabled:opacity-60"
                 >
-                  Lanjut
+                  {sending ? "Mengirim kode…" : "Lanjut"}
                 </button>
+                {sending && (
+                  <div className="mt-4 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full w-1/3 rounded-full bg-accent progress-slide" />
+                  </div>
+                )}
               </div>
             </div>
             <p className="text-center text-[12px] text-white/30 pb-2">

@@ -2,13 +2,19 @@ import React from "react";
 import { I, MenuRow, SheetHeader } from "./ui";
 
 /* ---------- Sheet "menu": Laporkan masalah / Pengaturan ---------- */
-export function MenuSheet({ onOpenSettings, onOpenLapor, onClose }) {
+export function MenuSheet({ onOpenSettings, onOpenLapor, onOpenAvatar, onClose }) {
   return (
     <div className="pt-2">
       <MenuRow
         icon={I.bug}
         title="Laporkan masalah"
         onClick={onOpenLapor}
+        right={null}
+      />
+      <MenuRow
+        icon={<span className="text-xl">🎨</span>}
+        title="Avatar CEPIRIT"
+        onClick={onOpenAvatar}
         right={null}
       />
       <MenuRow

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import AuthScreen from "./components/AuthScreen";
+import AvatarStudio from "./components/AvatarStudio";
+import { AvatarProvider } from "./lib/avatar";
 import ChatScreen from "./components/ChatScreen";
 import Drawer from "./components/Drawer";
 import { MenuSheet } from "./components/SettingsMenu";
@@ -21,7 +23,7 @@ import {
   TIPE_ARTEFAK,
 } from "./components/Desktop";
 
-export default function App() {
+function AppInner() {
   const [authed, setAuthed] = useState(() => {
     try {
       return (
@@ -122,6 +124,7 @@ export default function App() {
               setSettingsOpen(true);
             }}
             onOpenLapor={() => openSheet("lapor-form")}
+            onOpenAvatar={() => openSheet("avatar")}
           />
         );
       case "lapor-form":
@@ -145,9 +148,11 @@ export default function App() {
       case "profil":
         return (
           <div className="px-2 pt-2">
-            <ProfilCepirit />
+            <ProfilCepirit onEditAvatar={() => openSheet("avatar")} />
           </div>
         );
+      case "avatar":
+        return <AvatarStudio onBack={back} />;
       default:
         return null;
     }
@@ -265,7 +270,9 @@ export default function App() {
 
         <main className="flex-1 min-w-0 h-full relative">{mainView}</main>
 
-        {view === "chat" && rightOpen && <RightPanel onClose={() => setRightOpen(false)} />}
+        {view === "chat" && rightOpen && (
+          <RightPanel onClose={() => setRightOpen(false)} onEditAvatar={() => openSheet("avatar")} />
+        )}
       </div>
 
       {/* Modal pengaturan 2 kolom */}
@@ -291,5 +298,15 @@ export default function App() {
         </Sheet>
       )}
     </div>
+  );
+}
+
+/* AvatarProvider membungkus seluruh app (termasuk layar login)
+   supaya konfigurasi avatar user berlaku global. */
+export default function App() {
+  return (
+    <AvatarProvider>
+      <AppInner />
+    </AvatarProvider>
   );
 }

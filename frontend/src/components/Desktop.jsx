@@ -249,7 +249,7 @@ const RIWAYAT = [
 ];
 
 /* ---------- Isi profil CEPIRIT (panel kanan) ---------- */
-export function ProfilCepirit() {
+export function ProfilCepirit({ onEditAvatar } = {}) {
   const [tab, setTab] = useState(0);
   const tabs = [
     { icon: I.menu, label: "Hari ini" },
@@ -264,11 +264,16 @@ export function ProfilCepirit() {
       <div className="flex flex-col items-center">
         <div className="relative">
           <CepiritAvatar size={96} label={false} />
-          <span className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-card2 border-2 border-[#171717] flex items-center justify-center text-gray-300">
+          <button
+            onClick={onEditAvatar}
+            title="Ganti avatar"
+            aria-label="Ganti avatar"
+            className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-card2 border-2 border-[#171717] flex items-center justify-center text-gray-300 hover:text-white"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
             </svg>
-          </span>
+          </button>
         </div>
         <div className="text-xl font-semibold mt-3">CEPIRIT</div>
         <div className="text-gray-400 text-[14px] mt-1.5 flex items-center gap-1.5">
@@ -374,14 +379,14 @@ export function ProfilCepirit() {
 }
 
 /* ---------- Panel kanan (desktop, tampilan chat) ---------- */
-export function RightPanel({ onClose }) {
+export function RightPanel({ onClose, onEditAvatar }) {
   return (
     <aside className="hidden xl:flex w-80 shrink-0 h-full border-l border-white/10 flex-col p-6 overflow-y-auto no-scrollbar bg-[#171717]">
       <div className="flex justify-end">
         <button onClick={onClose} className="text-gray-500 hover:text-white text-2xl leading-none" aria-label="Tutup panel">×</button>
       </div>
       <div className="mt-2">
-        <ProfilCepirit />
+        <ProfilCepirit onEditAvatar={onEditAvatar} />
       </div>
     </aside>
   );
