@@ -49,6 +49,7 @@ export default function AvatarStudio({ onBack }) {
 
   const [desc, setDesc] = useState("");
   const [sending, setSending] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [requests, setRequests] = useState(loadLocalRequests);
   /* Preset dari backend (GET /api/avatar/presets); bila backend mati atau
      datanya tidak valid, pakai daftar preset lokal di lib/avatar. */
@@ -84,6 +85,25 @@ export default function AvatarStudio({ onBack }) {
     setTesting(true);
     await delay(2200);
     setTesting(false);
+  };
+
+  /* Salin URL gambar avatar (berasal dari draft — berubah tiap
+     warna/topi/aksesoris diganti). Fallback bila clipboard API tidak ada. */
+  const copyUrl = async () => {
+    const url = avatarApi.renderUrl(draft);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch { /* abaikan */ }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    await delay(1200);
+    setCopied(false);
   };
 
   const applyAvatar = async () => {
@@ -166,6 +186,30 @@ export default function AvatarStudio({ onBack }) {
                 Tes animasi progress ▶
               </button>
             )}
+          </div>
+
+          {/* URL gambar avatar — ikut berubah tiap draft diganti */}
+          <div className="mt-5">
+            <div className="text-[13px] uppercase tracking-wide text-gray-500">URL gambar avatar</div>
+            <div className="mt-2 flex items-start gap-2 bg-card2 rounded-2xl px-3 py-2.5">
+              <a
+                href={avatarApi.renderUrl(draft)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 min-w-0 text-[13px] text-gray-300 break-all font-mono hover:text-white"
+              >
+                {avatarApi.renderUrl(draft)}
+              </a>
+              <button
+                onClick={copyUrl}
+                className="shrink-0 px-3 py-1.5 rounded-full bg-white/10 text-[13px] text-white hover:bg-white/20 transition-colors"
+              >
+                {copied ? "Disalin ✓" : "Salin"}
+              </button>
+            </div>
+            <p className="text-[12px] text-gray-500 mt-1.5">
+              URL berubah tiap warna, topi, atau aksesoris diganti — klik untuk melihat gambarnya.
+            </p>
           </div>
 
           {/* Preset */}
