@@ -228,17 +228,26 @@ export function Lightbox({ items, index, onIndex, onClose, onDelete }) {
     a.click();
     a.remove();
   };
+  /* Tombol panah ke atas itu Share, BUKAN Unduh: kalau share sheet
+     dibatalkan user, jangan lakukan apa-apa; kalau browser tidak
+     mendukung berbagi file, beri tahu — jangan diam-diam jadi unduh
+     (tombol Unduh sudah ada sendiri di sebelahnya). */
   const bagikan = async () => {
     if (!src) return;
+    const tidakDidukung = () => window.alert("Berbagi file tidak didukung di browser ini — pakai tombol Unduh di sebelahnya ya.");
     try {
       const blob = await (await fetch(src)).blob();
       const file = new File([blob], nama, { type: blob.type || "image/png" });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file] });
+      const bisaShareFile = !navigator.canShare || navigator.canShare({ files: [file] });
+      if (!navigator.share || !bisaShareFile) {
+        tidakDidukung();
         return;
       }
-    } catch {}
-    unduh();
+      await navigator.share({ files: [file] });
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // user menutup share sheet
+      tidakDidukung();
+    }
   };
   const tombolAksi = "w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center shrink-0";
   return (
