@@ -602,7 +602,12 @@ export function SasaranPage({ goals, onSelectKategori, onDeleteGoal }) {
 
 /* ---------- Halaman Galeri / Artefak ---------- */
 export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate, onDelete, sort = "terakhir-dibuka", onSort = () => {}, view = "grid", onView = () => {}, onBuka = () => {} }) {
-  const [gambarDibuka, setGambarDibuka] = useState(null);
+  const [daftarGambar, setDaftarGambar] = useState(null); // snapshot gambar saat viewer dibuka
+  const [idxGambar, setIdxGambar] = useState(null);
+  /* Daftar gambar di viewer: urutannya dibekukan saat dibuka (supaya tidak
+     berubah saat "Terakhir dibuka" tercatat), tapi yang sudah dihapus
+     ikut hilang dari daftar. */
+  const gambarViewer = daftarGambar ? daftarGambar.filter((x) => artifacts.some((a) => a.id === x.id)) : [];
   const [pdfDibuka, setPdfDibuka] = useState(null);
   const [modePilih, setModePilih] = useState(false);
   const [terpilih, setTerpilih] = useState([]);
@@ -624,7 +629,11 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
      dari IndexedDB kalau blob sesi ini sudah tidak ada. */
   const bukaArtefak = async (a) => {
     if (a.thumb) {
-      setGambarDibuka({ src: a.thumb, nama: a.nama });
+      const daftar = artefakTerurut.filter((x) => x.thumb);
+      const idx = daftar.findIndex((x) => x.id === a.id);
+      if (idx < 0) return;
+      setDaftarGambar(daftar);
+      setIdxGambar(idx);
       onBuka(a.id);
       return;
     }
@@ -883,8 +892,19 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
           </button>
         </div>
       )}
-      {gambarDibuka && (
-        <Lightbox src={gambarDibuka.src} nama={gambarDibuka.nama} onClose={() => setGambarDibuka(null)} />
+      {idxGambar !== null && gambarViewer[idxGambar] && (
+        <Lightbox
+          items={gambarViewer}
+          index={idxGambar}
+          onIndex={setIdxGambar}
+          onClose={() => { setIdxGambar(null); setDaftarGambar(null); }}
+          onDelete={() => {
+            const item = gambarViewer[idxGambar];
+            if (!item) return;
+            if (!window.confirm("Hapus gambar ini dari Artefak?")) return;
+            onDelete(item.id);
+          }}
+        />
       )}
       {pdfDibuka && (
         <PdfViewer

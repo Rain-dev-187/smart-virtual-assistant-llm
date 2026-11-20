@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { DEFAULT_AVATAR, useAvatar } from "../lib/avatar";
+import { urlFileLampiranAsync } from "../lib/lampiran";
 
 /* ---------- Bagian topi avatar ---------- */
 function AvatarHat({ hat }) {
@@ -179,34 +180,116 @@ export function Sheet({ children, onClose, labelled = true }) {
 }
 
 /* ---------- Penampil gambar layar penuh ---------- */
-export function Lightbox({ src, nama, onClose }) {
+/* ---------- Penampil gambar layar penuh ---------- */
+export function Lightbox({ items, index, onIndex, onClose, onDelete }) {
+  const item = items[index] || null;
+  const [src, setSrc] = useState(null);
+  const [gagal, setGagal] = useState(false);
+  /* URL gambar diambil dari blob sesi / IndexedDB / data URL — yang dibuka
+     bisa jadi file asli (resolusi penuh), bukan cuma thumb kecil. */
+  useEffect(() => {
+    if (!item) return undefined;
+    let hidup = true;
+    setSrc(null);
+    setGagal(false);
+    urlFileLampiranAsync(item).then((u) => {
+      if (!hidup) return;
+      const final = u || item.dataUrl || item.thumb || null;
+      setSrc(final);
+      setGagal(!final);
+    });
+    return () => {
+      hidup = false;
+    };
+  }, [item]);
+  /* Kalau daftar gambar menyusut (mis. habis dihapus), jaga indeks tetap
+     valid; kalau habis, tutup. */
+  useEffect(() => {
+    if (items.length === 0) onClose();
+    else if (index >= items.length) onIndex(items.length - 1);
+  }, [items.length, index, onClose, onIndex]);
   useEffect(() => {
     const h = (e) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onIndex(Math.max(0, index - 1));
+      if (e.key === "ArrowRight") onIndex(Math.min(items.length - 1, index + 1));
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [onClose]);
+  }, [onClose, index, items.length, onIndex]);
+  if (!item) return null;
+  const nama = item.nama || "Gambar";
+  const unduh = () => {
+    if (!src) return;
+    const a = document.createElement("a");
+    a.href = src;
+    a.download = nama;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+  const bagikan = async () => {
+    if (!src) return;
+    try {
+      const blob = await (await fetch(src)).blob();
+      const file = new File([blob], nama, { type: blob.type || "image/png" });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return;
+      }
+    } catch {}
+    unduh();
+  };
+  const tombolAksi = "w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center shrink-0";
   return (
-    <div className="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white text-2xl leading-none flex items-center justify-center"
-        aria-label="Tutup"
-      >
-        ×
-      </button>
-      <img
-        src={src}
-        alt={nama || "Gambar"}
-        className="max-w-full max-h-full object-contain rounded-lg"
-        onClick={(e) => e.stopPropagation()}
-      />
-      {nama && (
-        <div className="absolute bottom-4 left-0 right-0 text-center text-sm text-gray-300 truncate px-6">
-          {nama}
+    <div className="fixed inset-0 z-[70] bg-black flex flex-col">
+      <div className="flex items-center justify-between px-3 pt-3 shrink-0">
+        <button onClick={onClose} className={`${tombolAksi} text-2xl leading-none`} aria-label="Tutup">
+          ×
+        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={bagikan} className={tombolAksi} aria-label="Bagikan">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+          </button>
+          {onDelete && (
+            <button onClick={onDelete} className={tombolAksi} aria-label="Hapus">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+            </button>
+          )}
+          <button onClick={unduh} className={tombolAksi} aria-label="Unduh">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+          </button>
         </div>
-      )}
+      </div>
+      <div className="relative flex-1 min-h-0 flex items-center justify-center" onClick={onClose}>
+        {src ? (
+          <img src={src} alt={nama} className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
+        ) : gagal ? (
+          <div className="text-gray-400 px-6 text-center text-[15px]">Gambar ini tidak bisa dibuka lagi. Upload ulang ya.</div>
+        ) : (
+          <div className="text-gray-400">Memuat…</div>
+        )}
+        {items.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); onIndex(Math.max(0, index - 1)); }}
+              disabled={index === 0}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center disabled:opacity-30"
+              aria-label="Sebelumnya"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onIndex(Math.min(items.length - 1, index + 1)); }}
+              disabled={index === items.length - 1}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center disabled:opacity-30"
+              aria-label="Berikutnya"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

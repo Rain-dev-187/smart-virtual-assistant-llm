@@ -109,7 +109,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
      + masuk Artefak saat tekan kirim. Gambar dikecilkan dulu (maks 1024px,
      JPEG 0.8) supaya muat di localStorage. */
   const [lampiranSiap, setLampiranSiap] = useState([]);
-  const [gambarDibuka, setGambarDibuka] = useState(null);
+  const [idxGambar, setIdxGambar] = useState(null);
+  /* Daftar gambar di chat ini (buat geser kiri-kanan di penampil gambar). */
+  const gambarPesan = messages.filter((m) => m.lampiran && m.lampiran.tipe === "gambar").map((m) => m.lampiran);
   const [pdfDibuka, setPdfDibuka] = useState(null);
   const fileInputRef = useRef(null);
   const tipeDariFile = (f) => {
@@ -177,15 +179,11 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     if ((l.nama || "").toLowerCase().endsWith(".pdf")) setPdfDibuka({ url, nama: l.nama });
     else window.open(url, "_blank");
   };
-  /* Ketuk gambar di chat: buka penampil layar penuh (file asli kalau ada,
-     kalau tidak gambar kecil yang tersimpan). */
-  const bukaGambarChat = async (l) => {
-    const url = await urlFileLampiranAsync(l);
-    if (!url) {
-      window.alert("Gambar ini tidak bisa dibuka lagi. Upload ulang ya.");
-      return;
-    }
-    setGambarDibuka({ src: url, nama: l.nama });
+  /* Ketuk gambar di chat: buka penampil layar penuh (bisa geser ke gambar
+     lain di chat ini). */
+  const bukaGambarChat = (l) => {
+    const idx = gambarPesan.findIndex((x) => x.id === l.id);
+    if (idx >= 0) setIdxGambar(idx);
   };
 
   const send = async () => {
@@ -766,8 +764,19 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           </button>
         </div>
       </div>
-      {gambarDibuka && (
-        <Lightbox src={gambarDibuka.src} nama={gambarDibuka.nama} onClose={() => setGambarDibuka(null)} />
+      {idxGambar !== null && gambarPesan[idxGambar] && (
+        <Lightbox
+          items={gambarPesan}
+          index={idxGambar}
+          onIndex={setIdxGambar}
+          onClose={() => setIdxGambar(null)}
+          onDelete={() => {
+            const item = gambarPesan[idxGambar];
+            if (!item) return;
+            if (!window.confirm("Hapus gambar ini dari chat?")) return;
+            setMessages((msgs) => msgs.filter((m) => !(m.lampiran && m.lampiran.id === item.id)));
+          }}
+        />
       )}
       {pdfDibuka && (
         <PdfViewer url={pdfDibuka.url} nama={pdfDibuka.nama} onClose={() => setPdfDibuka(null)} />
