@@ -455,7 +455,7 @@ export default function Drawer({
           )}
         </div>
       </div>
-    );
+    ) : null;
 
   if (asSidebar) {
     return (
