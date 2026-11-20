@@ -87,10 +87,18 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     setPicker(null);
   }, [chat?.id]);
 
-  /* Tiap pesan berubah, simpan ke obrolan aktif (judul otomatis ikut). */
+  /* Tiap pesan berubah, simpan ke obrolan aktif (judul otomatis ikut).
+     Lewati satu commit pertama setelah ganti obrolan: saat itu state
+     `messages` masih milik obrolan lama, jadi menyimpannya akan menimpa
+     obrolan baru dengan isi obrolan utama (side chat jadi nyatu). */
+  const chatIdSebelumnya = useRef(chat?.id);
   useEffect(() => {
+    if (chatIdSebelumnya.current !== chat?.id) {
+      chatIdSebelumnya.current = chat?.id;
+      return;
+    }
     onMessagesChange(messages);
-  }, [messages]);
+  }, [messages, chat?.id]);
 
   const send = async () => {
     const text = draft.trim();
