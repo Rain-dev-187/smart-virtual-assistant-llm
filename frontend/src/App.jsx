@@ -28,6 +28,7 @@ import {
   obrolanAwal,
   buatObrolanBaru,
   judulDariPesan,
+  obrolanUtama,
   ACTIVE_CHAT_KEY,
   SESSION_KEY,
 } from "./lib/chats";
@@ -76,7 +77,7 @@ function AppInner() {
       return "";
     }
   });
-  const activeChat = chats.find((c) => c.id === activeChatId) || chats[0];
+  const activeChat = chats.find((c) => c.id === activeChatId) || obrolanUtama(chats) || chats[0];
   useEffect(() => {
     simpanObrolan(chats);
   }, [chats]);
@@ -124,6 +125,42 @@ function AppInner() {
   const updateSesiObrolan = (sessionId) => {
     cerminkanSesi(sessionId);
     setChats((cs) => cs.map((c) => (c.id === activeChat.id ? { ...c, sessionId } : c)));
+  };
+  const pinObrolan = (id) => {
+    setChats((cs) => cs.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)));
+  };
+  const renameObrolan = (id, title) => {
+    const t = (title || "").trim();
+    if (!t) return;
+    setChats((cs) => cs.map((c) => (c.id === id ? { ...c, title: t } : c)));
+  };
+  const arsipObrolan = (id) => {
+    setChats((cs) => cs.map((c) => (c.id === id ? { ...c, archived: true } : c)));
+    if (id === activeChat.id) {
+      const lain = chats.find((c) => c.id !== id && !c.archived);
+      if (lain) pilihObrolan(lain.id);
+      else buatObrolan();
+    }
+  };
+  const hapusObrolan = (id) => {
+    const sisa = chats.filter((c) => c.id !== id);
+    if (!sisa.length) {
+      const baru = buatObrolanBaru();
+      setChats([baru]);
+      setActiveChatId(baru.id);
+      cerminkanSesi("");
+      setView("chat");
+      return;
+    }
+    setChats(sisa);
+    if (id === activeChat.id) {
+      const pertama = sisa.find((c) => !c.archived) || sisa[0];
+      pilihObrolan(pertama.id);
+    }
+  };
+  const bukaArsip = (id) => {
+    setChats((cs) => cs.map((c) => (c.id === id ? { ...c, archived: false } : c)));
+    pilihObrolan(id);
   };
   const [chatSide, setChatSide] = useState(false);
   const [chatPinned, setChatPinned] = useState(() => {
@@ -324,6 +361,11 @@ function AppInner() {
           activeChatId={activeChat.id}
           onSelectChat={pilihObrolan}
           onCreateChat={buatObrolan}
+          onPinChat={pinObrolan}
+          onRenameChat={renameObrolan}
+          onArchiveChat={arsipObrolan}
+          onDeleteChat={hapusObrolan}
+          onOpenArchived={bukaArsip}
         />
       </div>
 
@@ -357,6 +399,11 @@ function AppInner() {
               activeChatId={activeChat.id}
               onSelectChat={pilihObrolan}
               onCreateChat={buatObrolan}
+              onPinChat={pinObrolan}
+              onRenameChat={renameObrolan}
+              onArchiveChat={arsipObrolan}
+              onDeleteChat={hapusObrolan}
+              onOpenArchived={bukaArsip}
             />
           </aside>
         )}

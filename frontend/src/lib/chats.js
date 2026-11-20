@@ -14,7 +14,7 @@ export function buatSapaan() {
 
 export function buatObrolanBaru(judul = "Obrolan baru") {
   const now = Date.now();
-  return { id: `c${now}`, title: judul, sessionId: "", messages: [buatSapaan()], createdAt: now, updatedAt: now };
+  return { id: `c${now}`, title: judul, sessionId: "", messages: [buatSapaan()], createdAt: now, updatedAt: now, pinned: false, archived: false };
 }
 
 export function muatObrolan() {
@@ -23,7 +23,10 @@ export function muatObrolan() {
     if (!raw) return null;
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr) || !arr.length) return null;
-    return arr.filter((c) => c && c.id && Array.isArray(c.messages));
+    const daftar = arr
+      .filter((c) => c && c.id && Array.isArray(c.messages))
+      .map((c) => ({ ...c, sessionId: c.sessionId || "", pinned: !!c.pinned, archived: !!c.archived }));
+    return daftar.length ? daftar : null;
   } catch {
     return null;
   }
@@ -44,6 +47,19 @@ export function obrolanAwal() {
   const c = buatObrolanBaru("Obrolan utama");
   c.sessionId = sessionId;
   return c;
+}
+
+/* Urutan daftar: yang di-pin dulu, lalu yang terakhir aktif. */
+export function urutkanObrolan(chats) {
+  return [...chats].sort(
+    (a, b) => (b.pinned - a.pinned) || (b.updatedAt - a.updatedAt)
+  );
+}
+
+/* Obrolan pertama (yang utama): yang paling dulu dibuat. */
+export function obrolanUtama(chats) {
+  if (!chats.length) return null;
+  return chats.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b));
 }
 
 /* Judul otomatis dari pesan pertama user (maks 30 karakter). */
