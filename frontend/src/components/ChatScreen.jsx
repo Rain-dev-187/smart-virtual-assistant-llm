@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { VityAvatar, I, Lightbox, PdfViewer } from "./ui";
 import { getDisplayName, teksSapaan } from "../lib/avatar";
-import { simpanBlobUrl, ambilBlobUrl, urlFileLampiran } from "../lib/lampiran";
+import { simpanBlobUrl, ambilBlobUrl, urlFileLampiranAsync } from "../lib/lampiran";
+import { simpanFile } from "../lib/fileStore";
 
 /* Sapaan awal: asisten memperkenalkan diri — bukan lagi contoh obrolan
    soal harga LLM. Nama mengikuti "Edit nama" di profil. */
@@ -152,6 +153,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       try {
         const id = `l${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
         simpanBlobUrl(id, URL.createObjectURL(f));
+        /* File asli disimpan utuh di IndexedDB supaya tetap bisa dibuka
+           setelah tab di-reload (data URL di localStorage cuma muat <=1 MB). */
+        simpanFile(id, f).catch(() => {});
         let dataUrl = null;
         if (f.type.startsWith("image/")) dataUrl = await kecilkanGambar(await bacaFile(f));
         else if (f.size <= 1048576) dataUrl = await bacaFile(f);
@@ -162,12 +166,26 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   };
   const hapusLampiranSiap = (i) => setLampiranSiap((p) => p.filter((_, j) => j !== i));
   /* Ketuk file di chat: PDF dibuka di penampil dalam aplikasi, file lain
-     dibuka di tab baru. */
-  const bukaLampiranChat = (l) => {
-    const url = urlFileLampiran(l);
-    if (!url) return;
+     dibuka di tab baru. Kalau byte-nya sudah tidak ada (file lama yang
+     di-upload sebelum perbaikan IndexedDB), beri tahu user, jangan diam. */
+  const bukaLampiranChat = async (l) => {
+    const url = await urlFileLampiranAsync(l);
+    if (!url) {
+      window.alert("File ini tidak bisa dibuka lagi. Upload ulang filenya ya.");
+      return;
+    }
     if ((l.nama || "").toLowerCase().endsWith(".pdf")) setPdfDibuka({ url, nama: l.nama });
     else window.open(url, "_blank");
+  };
+  /* Ketuk gambar di chat: buka penampil layar penuh (file asli kalau ada,
+     kalau tidak gambar kecil yang tersimpan). */
+  const bukaGambarChat = async (l) => {
+    const url = await urlFileLampiranAsync(l);
+    if (!url) {
+      window.alert("Gambar ini tidak bisa dibuka lagi. Upload ulang ya.");
+      return;
+    }
+    setGambarDibuka({ src: url, nama: l.nama });
   };
 
   const send = async () => {
@@ -198,7 +216,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       pesanBaru.push({ role: "user", text: "", waktu: Date.now(), lampiran: lampiran[i] });
     }
     setMessages((m) => [...m, ...pesanBaru]);
-    for (const l of lampiran) onAddArtefak(l.nama, l.tipe, l.dataUrl, ambilBlobUrl(l.id));
+    for (const l of lampiran) onAddArtefak(l.nama, l.tipe, l.dataUrl, ambilBlobUrl(l.id), l.id);
     /* Cuma lampiran tanpa teks: tidak ada yang ditanyakan ke backend. */
     if (!text) return;
     /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
@@ -479,7 +497,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                     {...bubbleProps(idx)}
                     src={m.lampiran.dataUrl}
                     alt={m.lampiran.nama}
-                    onClick={() => setGambarDibuka({ src: m.lampiran.dataUrl, nama: m.lampiran.nama })}
+                    onClick={() => bukaGambarChat(m.lampiran)}
                     className="max-w-[260px] max-h-[260px] w-auto h-auto rounded-2xl object-cover cursor-pointer select-none"
                   />
                 )}

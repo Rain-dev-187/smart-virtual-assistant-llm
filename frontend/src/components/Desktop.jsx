@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { I, VityAvatar, SheetHeader, Lightbox, PdfViewer } from "./ui";
 import Drawer from "./Drawer";
 import { getDisplayName, setDisplayName, avatarApi, useAvatar } from "../lib/avatar";
-import { urlFileLampiran } from "../lib/lampiran";
+import { urlFileLampiranAsync } from "../lib/lampiran";
 
 /* ---------- Ikon SVG kecil ---------- */
 const sw = { fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
@@ -605,11 +605,15 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
   const [gambarDibuka, setGambarDibuka] = useState(null);
   const [pdfDibuka, setPdfDibuka] = useState(null);
   /* Ketuk kartu buat buka: gambar tampil layar penuh; PDF dibuka di
-     penampil dalam aplikasi; dokumen lain dibuka di tab baru. */
-  const bukaArtefak = (a) => {
+     penampil dalam aplikasi; dokumen lain dibuka di tab baru. File diambil
+     dari IndexedDB kalau blob sesi ini sudah tidak ada. */
+  const bukaArtefak = async (a) => {
     if (a.thumb) return setGambarDibuka({ src: a.thumb, nama: a.nama });
-    const url = urlFileLampiran(a);
-    if (!url) return;
+    const url = await urlFileLampiranAsync(a);
+    if (!url) {
+      window.alert("File ini tidak bisa dibuka lagi. Upload ulang filenya ya.");
+      return;
+    }
     if ((a.nama || "").toLowerCase().endsWith(".pdf")) return setPdfDibuka({ url, nama: a.nama, id: a.id });
     window.open(url, "_blank");
   };

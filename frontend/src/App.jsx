@@ -3,6 +3,7 @@ import AuthScreen from "./components/AuthScreen";
 import AvatarStudio from "./components/AvatarStudio";
 import { AvatarProvider } from "./lib/avatar";
 import { simpanBlobUrl } from "./lib/lampiran";
+import { salinFile, hapusFile } from "./lib/fileStore";
 import ChatScreen from "./components/ChatScreen";
 import Drawer from "./components/Drawer";
 import { MenuSheet } from "./components/SettingsMenu";
@@ -230,10 +231,13 @@ function AppInner() {
   /* dataUrl: gambar jadi thumb, dokumen kecil (<=1 MB) tersimpan supaya
      bisa dibuka lagi; blobUrl (file asli sesi ini) cuma di cache runtime,
      tidak ikut tersimpan ke localStorage. */
-  const addArtefak = (nama, tipe, dataUrl, blobUrl) => {
+  const addArtefak = (nama, tipe, dataUrl, blobUrl, fileId) => {
     const t = TIPE_ARTEFAK.find((x) => x.key === tipe);
     const id = Date.now() + Math.random();
     if (blobUrl) simpanBlobUrl(id, blobUrl);
+    /* File asli di IndexedDB disalin ke id artefak ini supaya artefaknya
+       tetap bisa dibuka setelah reload, walau pesan chat-nya dihapus. */
+    if (fileId) salinFile(fileId, id).catch(() => {});
     setArtifacts((a) => [
       ...a,
       {
@@ -347,7 +351,7 @@ function AppInner() {
         filter={galeriFilter}
         onFilter={setGaleriFilter}
         onCreate={() => openSheet("artefak-form")}
-        onDelete={(id) => setArtifacts((a) => a.filter((x) => x.id !== id))}
+        onDelete={(id) => { setArtifacts((a) => a.filter((x) => x.id !== id)); hapusFile(id).catch(() => {}); }}
       />
     );
 
