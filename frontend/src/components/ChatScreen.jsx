@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { VityAvatar, I, Lightbox } from "./ui";
+import { VityAvatar, I, Lightbox, PdfViewer } from "./ui";
 import { getDisplayName, teksSapaan } from "../lib/avatar";
-import { simpanBlobUrl, ambilBlobUrl, bukaFileLampiran } from "../lib/lampiran";
+import { simpanBlobUrl, ambilBlobUrl, urlFileLampiran } from "../lib/lampiran";
 
 /* Sapaan awal: asisten memperkenalkan diri — bukan lagi contoh obrolan
    soal harga LLM. Nama mengikuti "Edit nama" di profil. */
@@ -109,6 +109,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
      JPEG 0.8) supaya muat di localStorage. */
   const [lampiranSiap, setLampiranSiap] = useState([]);
   const [gambarDibuka, setGambarDibuka] = useState(null);
+  const [pdfDibuka, setPdfDibuka] = useState(null);
   const fileInputRef = useRef(null);
   const tipeDariFile = (f) => {
     if (f.type.startsWith("image/")) return "gambar";
@@ -160,6 +161,14 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     if (baru.length) setLampiranSiap((p) => [...p, ...baru]);
   };
   const hapusLampiranSiap = (i) => setLampiranSiap((p) => p.filter((_, j) => j !== i));
+  /* Ketuk file di chat: PDF dibuka di penampil dalam aplikasi, file lain
+     dibuka di tab baru. */
+  const bukaLampiranChat = (l) => {
+    const url = urlFileLampiran(l);
+    if (!url) return;
+    if ((l.nama || "").toLowerCase().endsWith(".pdf")) setPdfDibuka({ url, nama: l.nama });
+    else window.open(url, "_blank");
+  };
 
   const send = async () => {
     const text = draft.trim();
@@ -476,7 +485,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                 )}
                 {m.lampiran && !(m.lampiran.dataUrl && m.lampiran.tipe === "gambar") && (
                   <button
-                    onClick={() => bukaFileLampiran(m.lampiran)}
+                    onClick={() => bukaLampiranChat(m.lampiran)}
                     className="flex items-center gap-2.5 bg-card2 rounded-2xl px-3 py-2.5 text-left"
                   >
                     <span className="text-xl shrink-0">📄</span>
@@ -741,6 +750,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       </div>
       {gambarDibuka && (
         <Lightbox src={gambarDibuka.src} nama={gambarDibuka.nama} onClose={() => setGambarDibuka(null)} />
+      )}
+      {pdfDibuka && (
+        <PdfViewer url={pdfDibuka.url} nama={pdfDibuka.nama} onClose={() => setPdfDibuka(null)} />
       )}
     </div>
   );

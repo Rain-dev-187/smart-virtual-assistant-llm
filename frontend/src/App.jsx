@@ -289,13 +289,11 @@ function AppInner() {
       case "artefak-form":
         return <ArtefakForm onSubmit={(nama, tipe) => { addArtefak(nama, tipe); back(); }} onBack={back} />;
       case "profil":
-        /* Sheet profil HP tadinya tanpa tombol kembali — sheet-nya hampir
-           sepenuh layar (88vh) dan backdrop yang bisa diketuk tinggal
-           setrip kecil di atas, jadi pengguna terjebak di dalamnya.
-           SheetHeader (nempel di atas saat scroll) memberi jalan keluar. */
+        /* Tombol kembali di sini dihapus (2026-11-20): sheet HP kini maks
+           80vh dengan garis geser, jadi jalan keluarnya geser ke bawah. */
         return (
           <div>
-            <SheetHeader title="Profil" onBack={back} />
+            <SheetHeader title="Profil" />
             <div className="px-2 pt-2">
               <ProfilVity onEditAvatar={() => openSheet("avatar")} />
             </div>

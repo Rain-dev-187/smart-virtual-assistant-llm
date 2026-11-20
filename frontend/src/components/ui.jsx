@@ -211,6 +211,96 @@ export function Lightbox({ src, nama, onClose }) {
   );
 }
 
+/* ---------- Penampil PDF di dalam aplikasi ---------- */
+export function PdfViewer({ url, nama, onClose, onDelete }) {
+  /* iframe di iOS tidak selalu mau menampilkan data: URL — jadi data URL
+     diubah dulu jadi blob URL saat dibuka (blob selalu tampil). */
+  const [src, setSrc] = useState(url.startsWith("blob:") ? url : null);
+  useEffect(() => {
+    if (url.startsWith("blob:")) return undefined;
+    let hidup = true;
+    let blobUrl = null;
+    fetch(url)
+      .then((r) => r.blob())
+      .then((b) => {
+        blobUrl = URL.createObjectURL(b);
+        if (hidup) setSrc(blobUrl);
+      })
+      .catch(() => {
+        if (hidup) setSrc(url);
+      });
+    return () => {
+      hidup = false;
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [url]);
+  const [menu, setMenu] = useState(false);
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+  const unduh = () => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nama || "dokumen.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setMenu(false);
+  };
+  return (
+    <div className="fixed inset-0 z-[80] bg-black flex flex-col">
+      <div className="flex items-center gap-2 px-4 h-14 shrink-0">
+        <div className="flex-1 min-w-0 text-[17px] font-medium text-white truncate">{nama || "Dokumen"}</div>
+        <button
+          onClick={() => setMenu((v) => !v)}
+          className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center text-white shrink-0"
+          aria-label="Opsi"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
+        </button>
+        <button
+          onClick={onClose}
+          className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center text-white text-2xl leading-none shrink-0"
+          aria-label="Tutup"
+        >
+          ×
+        </button>
+      </div>
+      {src ? (
+        <iframe src={src} title={nama || "Dokumen"} className="flex-1 w-full border-0 bg-white" />
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-gray-400">Memuat…</div>
+      )}
+      {menu && (
+        <div className="absolute inset-0 z-10" onClick={() => setMenu(false)}>
+          <div className="absolute inset-x-0 bottom-0 bg-card rounded-t-3xl px-2 pt-2 pb-6" onClick={(e) => e.stopPropagation()}>
+            <div className="pt-2 pb-1 flex justify-center">
+              <div className="w-10 h-1 rounded-full bg-gray-600" />
+            </div>
+            <button onClick={unduh} className="w-full flex items-center gap-3 px-4 py-3.5 text-left text-white text-[17px]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              Download
+            </button>
+            {onDelete && (
+              <button
+                onClick={() => { setMenu(false); onDelete(); }}
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-left text-danger text-[17px]"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                Delete
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ---------- Header sheet dengan tombol back ---------- */
 export function SheetHeader({ title, onBack }) {
   return (

@@ -14,10 +14,16 @@ export function ambilBlobUrl(id) {
   return (id && cache.get(id)) || null;
 }
 
+/* URL yang bisa dibuka untuk sebuah lampiran/artefak: blob sesi ini kalau
+   ada, kalau tidak data URL yang tersimpan. */
+export function urlFileLampiran(l) {
+  return ambilBlobUrl(l?.id) || l?.dataUrl || null;
+}
+
 /* Buka file non-gambar: pakai blob sesi ini kalau ada, kalau tidak pakai
    data URL yang tersimpan. Mengembalikan false kalau tidak ada yang bisa dibuka. */
 export function bukaFileLampiran(l) {
-  const url = ambilBlobUrl(l?.id) || l?.dataUrl || null;
+  const url = urlFileLampiran(l);
   if (!url) return false;
   window.open(url, "_blank");
   return true;
