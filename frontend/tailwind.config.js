@@ -9,7 +9,9 @@ export default {
       colors: {
         card: "#1c1c1e",
         card2: "#2c2c2e",
-        accent: "#0a84ff",
+        /* Aksen mengikuti tema yang dipilih di Pengaturan > Umum
+           (CSS variable --vity-accent, default biru #0a84ff). */
+        accent: "var(--vity-accent, #0a84ff)",
         danger: "#ff453a",
       },
       fontFamily: {

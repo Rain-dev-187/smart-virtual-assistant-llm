@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SheetHeader, SectionTitle, Progress } from "./ui";
+import { getTheme, setTheme, warnaTerang } from "../lib/theme";
 
 const THEMES = [
   { name: "Krem", bg: "#f5e9d6" },
@@ -13,7 +14,15 @@ const THEMES = [
 
 export default function Umum({ onBack, bare = false }) {
   const [mode, setMode] = useState("otomatis");
-  const [theme, setTheme] = useState(0);
+  /* Warna tema tersimpan (bukan cuma centang): langsung mengubah aksen chat. */
+  const [theme, setThemeState] = useState(() => {
+    const i = THEMES.findIndex((t) => t.bg.toLowerCase() === getTheme().toLowerCase());
+    return i >= 0 ? i : 1; // default Biru
+  });
+  const pilihTema = (i) => {
+    setThemeState(i);
+    setTheme(THEMES[i].bg);
+  };
 
   return (
     <div>
@@ -33,24 +42,24 @@ export default function Umum({ onBack, bare = false }) {
       <SectionTitle>Penggunaan</SectionTitle>
       <div className="mx-4 bg-card2 rounded-3xl p-5 space-y-6">
         <div>
-          <div className="flex justify-between items-start mb-1">
-            <div>
+          <div className="flex justify-between items-start gap-3 mb-1">
+            <div className="min-w-0">
               <div className="text-[17px] font-medium">Paket gratis</div>
               <div className="text-gray-400 text-[15px]">Batas mingguan diatur ulang pada 14 Okt</div>
             </div>
-            <div className="text-right text-gray-400 text-[15px] leading-tight">
+            <div className="text-right text-gray-400 text-[15px] leading-tight shrink-0">
               0%<br />digunakan
             </div>
           </div>
           <Progress value={0} />
         </div>
         <div>
-          <div className="flex justify-between items-start mb-1">
-            <div>
+          <div className="flex justify-between items-start gap-3 mb-1">
+            <div className="min-w-0">
               <div className="text-[17px] font-medium">Token tambahan</div>
               <div className="text-gray-400 text-[15px]">Tidak pernah kedaluwarsa</div>
             </div>
-            <div className="text-right text-gray-400 text-[15px] leading-tight">
+            <div className="text-right text-gray-400 text-[15px] leading-tight shrink-0">
               0% digunakan (sisa 1 M<br />token)
             </div>
           </div>
@@ -87,18 +96,23 @@ export default function Umum({ onBack, bare = false }) {
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-[17px]">Warna tema</span>
-          <div className="flex gap-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[17px] shrink-0">Warna tema</span>
+          {/* 7 lingkaran muat di layar sempit: boleh turun ke baris kedua. */}
+          <div className="flex flex-wrap justify-end gap-2.5">
             {THEMES.map((t, i) => (
               <button
                 key={t.name}
-                onClick={() => setTheme(i)}
-                className="w-9 h-9 rounded-full flex items-center justify-center"
+                onClick={() => pilihTema(i)}
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                 style={{ background: t.bg }}
                 aria-label={t.name}
               >
-                {theme === i && <span className="text-black text-sm">✓</span>}
+                {theme === i && (
+                  <span className="text-sm" style={{ color: warnaTerang(t.bg) ? "#1c1c1e" : "#fff" }}>
+                    ✓
+                  </span>
+                )}
               </button>
             ))}
           </div>

@@ -509,7 +509,7 @@ export function ProfilVity({ onEditAvatar } = {}) {
               </button>
               <button
                 onClick={simpanNama}
-                className="flex-1 py-2.5 rounded-full bg-accent text-white text-[15px]"
+                className="flex-1 py-2.5 rounded-full bg-accent text-[var(--vity-on-accent,white)] text-[15px]"
               >
                 Simpan
               </button>
@@ -608,7 +608,7 @@ export function GaleriPage({ artifacts, filterLabel, onCreate, onDelete }) {
           <h1 className="text-[28px] font-bold">{filterLabel}</h1>
           <div className="flex items-center gap-2">
             <button className="bg-card2 text-white rounded-full px-5 py-2.5 text-[15px] font-medium hover:bg-white/10">Pilih</button>
-            <button onClick={onCreate} className="bg-accent text-white rounded-full px-5 py-2.5 text-[15px] font-medium hover:opacity-90">
+            <button onClick={onCreate} className="bg-accent text-[var(--vity-on-accent,white)] rounded-full px-5 py-2.5 text-[15px] font-medium hover:opacity-90">
               + Buat artefak
             </button>
           </div>
@@ -762,7 +762,7 @@ export function ArtefakForm({ onSubmit, onBack }) {
               key={t.key}
               onClick={() => setTipe(t.key)}
               className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-[15px] transition-colors ${
-                tipe === t.key ? "bg-accent text-white" : "bg-card2 text-gray-300"
+                tipe === t.key ? "bg-accent text-[var(--vity-on-accent,white)]" : "bg-card2 text-gray-300"
               }`}
             >
               <span>{t.emoji}</span> {t.label}
@@ -772,7 +772,7 @@ export function ArtefakForm({ onSubmit, onBack }) {
         <button
           disabled={!nama.trim()}
           onClick={() => onSubmit(nama.trim(), tipe)}
-          className="mt-4 w-full bg-accent disabled:opacity-40 text-white rounded-full py-3 font-semibold"
+          className="mt-4 w-full bg-accent disabled:opacity-40 text-[var(--vity-on-accent,white)] rounded-full py-3 font-semibold"
         >
           Buat
         </button>

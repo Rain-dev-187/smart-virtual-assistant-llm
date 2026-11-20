@@ -9,6 +9,9 @@ html, body, #root {
 
 body {
   background-color: #171717;
+  /* Halaman tidak boleh geser ke samping: elemen fixed (modal pengaturan)
+     ikut bergeser kalau halaman bisa di-scroll horizontal di HP. */
+  overflow-x: clip;
   color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

@@ -378,7 +378,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                   <AksiPesan idx={idx} isUser />
                   <div
                     {...bubbleProps(idx)}
-                    className="bg-accent text-white rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                    className="bg-accent text-[var(--vity-on-accent,white)] rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
                   >
                     {m.replyTo && (
                       <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
@@ -574,7 +574,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           <button
             onClick={send}
             disabled={sending}
-            className="w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50"
+            className="w-11 h-11 rounded-full bg-accent text-[var(--vity-on-accent,white)] flex items-center justify-center shrink-0 disabled:opacity-50"
             aria-label="Kirim"
           >
             {I.send}

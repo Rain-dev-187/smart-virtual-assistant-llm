@@ -110,7 +110,7 @@ export function Artefak({ onBack, onClose }) {
         </button>
         <div className="flex items-center gap-3">
           <button className="w-11 h-11 rounded-full bg-card2 flex items-center justify-center text-xl" aria-label="Opsi">⋯</button>
-          <button className="w-11 h-11 rounded-full bg-accent flex items-center justify-center text-3xl leading-none" aria-label="Tambah">+</button>
+          <button className="w-11 h-11 rounded-full bg-accent text-[var(--vity-on-accent,white)] flex items-center justify-center text-3xl leading-none" aria-label="Tambah">+</button>
         </div>
       </div>
       <div className="flex-1" />

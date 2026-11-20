@@ -106,7 +106,7 @@ export default function SettingsModal({ onClose, onLogout }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative w-full max-w-4xl h-[85vh] md:h-[80vh] bg-card rounded-3xl flex overflow-hidden shadow-2xl animate-pop-in">
+      <div className="relative w-full max-w-[calc(100vw-2rem)] md:max-w-4xl h-[85vh] md:h-[80vh] bg-card rounded-3xl flex overflow-hidden shadow-2xl animate-pop-in">
         {/* Kolom kiri: navigasi */}
         <div
           className={`shrink-0 h-full border-r border-white/10 bg-black/20 ${
