@@ -707,7 +707,11 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
                 >
                   ×
                 </button>
-                <div className="text-3xl mb-3">{a.emoji}</div>
+                {a.thumb ? (
+                  <img src={a.thumb} alt={a.nama} className="w-full h-28 object-cover rounded-xl mb-3" />
+                ) : (
+                  <div className="text-3xl mb-3">{a.emoji}</div>
+                )}
                 <div className="font-medium truncate">{a.nama}</div>
                 <div className="text-gray-500 text-[13px] mt-1">{a.tipeLabel}</div>
               </div>

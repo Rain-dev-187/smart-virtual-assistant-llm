@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { I } from "./ui";
 import Umum from "./Umum";
 import Konektor from "./Konektor";
@@ -31,6 +31,51 @@ export default function SettingsModal({ onClose, onLogout }) {
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
+
+  /* Geser ke bawah buat nutup (HP): sheet nempel di bawah dengan ruang
+     di atasnya, garis pegangan di atas jadi tempat tariknya. Polanya sama
+     seperti Sheet biasa: tarik dari 60px teratas, lepas di atas 100px. */
+  const panelRef = useRef(null);
+  const drag = useRef({ active: false, startY: 0, grab: false, pulledDy: 0 });
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef(null);
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+  const onTouchStart = (e) => {
+    if (closing || !window.matchMedia("(max-width: 767px)").matches) return;
+    const y = e.touches[0].clientY;
+    const rect = panelRef.current ? panelRef.current.getBoundingClientRect() : null;
+    drag.current = { active: true, startY: y, grab: rect ? y - rect.top < 60 : false, pulledDy: 0 };
+    setDragging(true);
+  };
+  const onTouchMove = (e) => {
+    const d = drag.current;
+    if (!d.active || closing) return;
+    const dy = e.touches[0].clientY - d.startY;
+    if (dy > 0 && d.grab) {
+      d.pulledDy = dy;
+      setDragY(dy);
+    } else if (dy <= 0) {
+      d.pulledDy = 0;
+      if (dragY !== 0) setDragY(0);
+    }
+  };
+  const onTouchEnd = () => {
+    const d = drag.current;
+    if (!d.active) return;
+    d.active = false;
+    setDragging(false);
+    if (d.pulledDy > 100) {
+      setClosing(true);
+      setDragY(window.innerHeight);
+      closeTimer.current = setTimeout(onClose, 200);
+    } else {
+      setDragY(0);
+    }
+  };
 
   const active = SECTIONS.find((s) => s.key === section);
 
@@ -104,9 +149,24 @@ export default function SettingsModal({ onClose, onLogout }) {
   );
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center md:p-4">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative w-full max-w-[calc(100vw-2rem)] md:max-w-4xl h-[85vh] md:h-[80vh] bg-card rounded-3xl flex overflow-hidden shadow-2xl animate-pop-in">
+      <div
+        ref={panelRef}
+        className="relative w-full md:max-w-4xl h-[88vh] md:h-[80vh] bg-card rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-pop-in"
+        style={{
+          transform: dragY ? `translateY(${dragY}px)` : undefined,
+          transition: dragging ? "none" : "transform 200ms ease-out",
+        }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Garis pegangan buat geser tutup — hanya di HP */}
+        <div className="pt-3 pb-1 flex justify-center shrink-0 md:hidden">
+          <div className="w-10 h-1 rounded-full bg-gray-600" />
+        </div>
+        <div className="flex-1 flex min-h-0">
         {/* Kolom kiri: navigasi */}
         <div
           className={`shrink-0 h-full border-r border-white/10 bg-black/20 ${
@@ -141,6 +201,7 @@ export default function SettingsModal({ onClose, onLogout }) {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto no-scrollbar py-2">{renderContent()}</div>
+        </div>
         </div>
       </div>
     </div>

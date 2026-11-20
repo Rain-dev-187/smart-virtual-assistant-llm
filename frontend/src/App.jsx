@@ -193,7 +193,20 @@ function AppInner() {
     }
   });
   const [goals, setGoals] = useState([]);
-  const [artifacts, setArtifacts] = useState([]);
+  const [artifacts, setArtifacts] = useState(() => {
+    try {
+      const raw = localStorage.getItem("vity_artifacts");
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("vity_artifacts", JSON.stringify(artifacts));
+    } catch {}
+  }, [artifacts]);
   const [galeriFilter, setGaleriFilter] = useState("semua");
   const [pendingKategori, setPendingKategori] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -213,13 +226,12 @@ function AppInner() {
     back();
   };
 
-  const addArtefak = (nama, tipe) => {
+  const addArtefak = (nama, tipe, thumb) => {
     const t = TIPE_ARTEFAK.find((x) => x.key === tipe);
     setArtifacts((a) => [
       ...a,
-      { id: Date.now(), nama, tipe, emoji: t?.emoji || "📄", tipeLabel: t?.label || tipe },
+      { id: Date.now() + Math.random(), nama, tipe, emoji: t?.emoji || "📄", tipeLabel: t?.label || tipe, ...(thumb ? { thumb } : {}) },
     ]);
-    back();
   };
 
   const filteredArtifacts =
@@ -261,7 +273,7 @@ function AppInner() {
           />
         ) : null;
       case "artefak-form":
-        return <ArtefakForm onSubmit={addArtefak} onBack={back} />;
+        return <ArtefakForm onSubmit={(nama, tipe) => { addArtefak(nama, tipe); back(); }} onBack={back} />;
       case "profil":
         /* Sheet profil HP tadinya tanpa tombol kembali — sheet-nya hampir
            sepenuh layar (88vh) dan backdrop yang bisa diketuk tinggal
@@ -305,6 +317,7 @@ function AppInner() {
         sessionId={activeChat.sessionId}
         onMessagesChange={updatePesanObrolan}
         onSessionIdChange={updateSesiObrolan}
+        onAddArtefak={addArtefak}
       />
     ) : view === "sasaran" ? (
       <SasaranPage

@@ -339,7 +339,7 @@ export default function Drawer({
                                 )}
                                 <span className="truncate">{c.title}</span>
                               </span>
-                              <span className="block text-gray-500 text-[14px] truncate">{last ? last.text : ""}</span>
+                              <span className="block text-gray-500 text-[14px] truncate">{last ? (last.lampiran ? last.lampiran.nama : last.text) : ""}</span>
                             </span>
                             {last?.waktu ? <span className="text-gray-600 text-[12px] shrink-0">{labelWaktuDaftar(last.waktu)}</span> : null}
                           </button>
@@ -446,7 +446,7 @@ export default function Drawer({
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-white text-[16px] font-medium truncate">{a.title}</span>
-                    <span className="block text-gray-500 text-[14px] truncate">{last ? last.text : ""}</span>
+                    <span className="block text-gray-500 text-[14px] truncate">{last ? (last.lampiran ? last.lampiran.nama : last.text) : ""}</span>
                   </span>
                   {last?.waktu ? <span className="text-gray-600 text-[12px] shrink-0">{labelWaktuDaftar(last.waktu)}</span> : null}
                 </button>

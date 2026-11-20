@@ -51,7 +51,7 @@ function labelPemisahHari(ts) {
   return `${hari}, ${tanggal}`;
 }
 
-export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false, chat, sessionId = "", onMessagesChange = () => {}, onSessionIdChange = () => {} }) {
+export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false, chat, sessionId = "", onMessagesChange = () => {}, onSessionIdChange = () => {}, onAddArtefak = () => {} }) {
   const [messages, setMessages] = useState(chat?.messages?.length ? chat.messages : INITIAL);
   const [draft, setDraft] = useState("");
   const [menu, setMenu] = useState(null); // {x, y, idx}
@@ -99,6 +99,61 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     }
     onMessagesChange(messages);
   }, [messages, chat?.id]);
+
+  /* Unggah file dari chat: tombol + di samping kolom ketik membuka
+     pemilih file bawaan HP (Galeri / Kamera / File / Drive). Gambar
+     dikecilkan dulu (maks 1024px, JPEG 0.8) supaya muat di localStorage;
+     file-nya juga masuk ke Artefak sesuai tipenya. */
+  const fileInputRef = useRef(null);
+  const tipeDariFile = (f) => {
+    if (f.type.startsWith("image/")) return "gambar";
+    if (f.type.startsWith("video/")) return "video";
+    if (f.type.startsWith("audio/")) return "podcast";
+    return "dokumen";
+  };
+  const formatUkuran = (b) => {
+    if (b >= 1048576) return `${(b / 1048576).toFixed(1)} MB`;
+    if (b >= 1024) return `${Math.round(b / 1024)} KB`;
+    return `${b} B`;
+  };
+  const kecilkanGambar = (dataUrl) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, 1024 / Math.max(img.width, img.height));
+        if (s >= 1) return resolve(dataUrl);
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * s);
+        c.height = Math.round(img.height * s);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  const bacaFile = (f) =>
+    new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(f);
+    });
+  const pilihFile = async (e) => {
+    const files = [...(e.target.files || [])];
+    e.target.value = "";
+    for (const f of files) {
+      try {
+        let dataUrl = null;
+        if (f.type.startsWith("image/")) dataUrl = await kecilkanGambar(await bacaFile(f));
+        const tipe = tipeDariFile(f);
+        setMessages((m) => [
+          ...m,
+          { role: "user", text: "", waktu: Date.now(), lampiran: { nama: f.name, tipe, ukuran: formatUkuran(f.size), dataUrl } },
+        ]);
+        onAddArtefak(f.name, tipe, dataUrl);
+      } catch {}
+    }
+  };
 
   const send = async () => {
     const text = draft.trim();
@@ -398,6 +453,18 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                         </div>
                       </div>
                     )}
+                    {m.lampiran?.dataUrl && m.lampiran.tipe === "gambar" && (
+                      <img src={m.lampiran.dataUrl} alt={m.lampiran.nama} className="max-w-[260px] max-h-[260px] w-auto h-auto rounded-2xl object-cover mb-1.5" />
+                    )}
+                    {m.lampiran && !(m.lampiran.dataUrl && m.lampiran.tipe === "gambar") && (
+                      <div className="flex items-center gap-2.5 bg-black/20 rounded-2xl px-3 py-2.5 mb-1.5 text-left">
+                        <span className="text-xl shrink-0">📄</span>
+                        <span className="min-w-0">
+                          <span className="block text-[14px] font-medium truncate max-w-[200px]">{m.lampiran.nama}</span>
+                          <span className="block text-[12px] text-white/70">{m.lampiran.ukuran}</span>
+                        </span>
+                      </div>
+                    )}
                     {m.text}
                   </div>
                 </div>
@@ -571,7 +638,15 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
             <button onClick={() => setReplyTo(null)} className="text-gray-500 hover:text-white text-xl leading-none" aria-label="Batalkan balasan">×</button>
           </div>
         )}
-        <div className="flex items-center gap-2 bg-card md:bg-transparent md:border md:border-white/15 rounded-full pl-5 pr-2 py-2">
+        <div className="flex items-center gap-2 bg-card md:bg-transparent md:border md:border-white/15 rounded-full pl-2 pr-2 py-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center text-gray-300 shrink-0"
+            aria-label="Unggah file"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          </button>
+          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={pilihFile} />
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
