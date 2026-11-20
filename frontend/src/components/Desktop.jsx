@@ -601,21 +601,56 @@ export function SasaranPage({ goals, onSelectKategori, onDeleteGoal }) {
 }
 
 /* ---------- Halaman Galeri / Artefak ---------- */
-export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate, onDelete }) {
+export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate, onDelete, sort = "terakhir-dibuka", onSort = () => {}, view = "grid", onView = () => {}, onBuka = () => {} }) {
   const [gambarDibuka, setGambarDibuka] = useState(null);
   const [pdfDibuka, setPdfDibuka] = useState(null);
+  const [modePilih, setModePilih] = useState(false);
+  const [terpilih, setTerpilih] = useState([]);
+  /* Urutan daftar — "Terakhir diubah" tidak ada karena artefak di VITY
+     tidak pernah diubah setelah dibuat (urutannya akan sama persis dengan
+     "Terakhir dibuat"). */
+  const URUTKAN = [
+    { key: "terakhir-dibuka", label: "Terakhir dibuka" },
+    { key: "terakhir-dibuat", label: "Terakhir dibuat" },
+    { key: "judul", label: "Judul" },
+  ];
+  const artefakTerurut = [...artifacts].sort((a, b) => {
+    if (sort === "judul") return (a.nama || "").localeCompare(b.nama || "", "id");
+    if (sort === "terakhir-dibuka") return (b.terakhirDibuka || b.dibuat || 0) - (a.terakhirDibuka || a.dibuat || 0);
+    return (b.dibuat || 0) - (a.dibuat || 0);
+  });
   /* Ketuk kartu buat buka: gambar tampil layar penuh; PDF dibuka di
      penampil dalam aplikasi; dokumen lain dibuka di tab baru. File diambil
      dari IndexedDB kalau blob sesi ini sudah tidak ada. */
   const bukaArtefak = async (a) => {
-    if (a.thumb) return setGambarDibuka({ src: a.thumb, nama: a.nama });
+    if (a.thumb) {
+      setGambarDibuka({ src: a.thumb, nama: a.nama });
+      onBuka(a.id);
+      return;
+    }
     const url = await urlFileLampiranAsync(a);
     if (!url) {
       window.alert("File ini tidak bisa dibuka lagi. Upload ulang filenya ya.");
       return;
     }
+    onBuka(a.id);
     if ((a.nama || "").toLowerCase().endsWith(".pdf")) return setPdfDibuka({ url, nama: a.nama, id: a.id });
     window.open(url, "_blank");
+  };
+  /* Dalam mode Pilih, ketuk kartu menandai/membatalkan pilihan, bukan buka. */
+  const alihPilih = (a) => {
+    if (!modePilih) return bukaArtefak(a);
+    setTerpilih((t) => (t.includes(a.id) ? t.filter((x) => x !== a.id) : [...t, a.id]));
+  };
+  const keluarModePilih = () => {
+    setModePilih(false);
+    setTerpilih([]);
+  };
+  const hapusTerpilih = () => {
+    if (!terpilih.length) return;
+    if (!window.confirm(`Hapus ${terpilih.length} artefak?`)) return;
+    terpilih.forEach((id) => onDelete(id));
+    keluarModePilih();
   };
   const [menuKategori, setMenuKategori] = useState(false);
   const [menuOpsi, setMenuOpsi] = useState(false);
@@ -653,16 +688,74 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
               {menuOpsi && (
                 <>
                   <div className="fixed inset-0 z-10 cursor-default" onClick={() => setMenuOpsi(false)} />
-                  <div className="absolute right-0 top-12 z-20 w-56 bg-card2 rounded-2xl shadow-2xl border border-white/5 overflow-hidden animate-pop-in">
+                  <div className="absolute right-0 top-12 z-20 w-64 bg-card2 rounded-2xl shadow-2xl border border-white/5 overflow-hidden animate-pop-in py-2">
                     <button
                       onClick={() => {
                         onCreate();
                         setMenuOpsi(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 text-left transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-left transition-colors"
                     >
                       <span className="text-gray-300 shrink-0 text-xl leading-none">+</span>
                       <span className="flex-1 text-[15px] text-white leading-snug">Buat artefak</span>
+                    </button>
+                    <div className="h-px bg-white/10 mx-3 my-1" />
+                    <button
+                      onClick={() => {
+                        setModePilih(true);
+                        setTerpilih([]);
+                        setMenuOpsi(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-left transition-colors"
+                    >
+                      <span className="flex-1 text-[15px] text-white leading-snug">Pilih</span>
+                    </button>
+                    <div className="h-px bg-white/10 mx-3 my-1" />
+                    {URUTKAN.map((u) => (
+                      <button
+                        key={u.key}
+                        onClick={() => {
+                          onSort(u.key);
+                          setMenuOpsi(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-left transition-colors"
+                      >
+                        <span className="flex-1 text-[15px] text-white leading-snug">{u.label}</span>
+                        {sort === u.key && (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent shrink-0">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                    <div className="h-px bg-white/10 mx-3 my-1" />
+                    <button
+                      onClick={() => {
+                        onView("grid");
+                        setMenuOpsi(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-left transition-colors"
+                    >
+                      <span className="flex-1 text-[15px] text-white leading-snug">Tampilan grid</span>
+                      {view === "grid" && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent shrink-0">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        onView("daftar");
+                        setMenuOpsi(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-left transition-colors"
+                    >
+                      <span className="flex-1 text-[15px] text-white leading-snug">Tampilan daftar</span>
+                      {view === "daftar" && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent shrink-0">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
                     </button>
                   </div>
                 </>
@@ -712,17 +805,57 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
             <span className="mb-4 opacity-70">{J.gridBig}</span>
             <p className="text-[16px]">Belum ada artefak</p>
           </div>
+        ) : view === "daftar" ? (
+          <div className="flex flex-col gap-2">
+            {artefakTerurut.map((a) => (
+              <div key={a.id} onClick={() => alihPilih(a)} className="bg-card rounded-2xl p-3 flex items-center gap-3 cursor-pointer relative">
+                {modePilih && (
+                  <span className={`w-6 h-6 rounded-full border-2 shrink-0 flex items-center justify-center ${terpilih.includes(a.id) ? "bg-accent border-accent text-[var(--vity-on-accent,white)]" : "border-gray-500"}`}>
+                    {terpilih.includes(a.id) && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    )}
+                  </span>
+                )}
+                {a.thumb ? (
+                  <img src={a.thumb} alt={a.nama} className="w-12 h-12 object-cover rounded-lg shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-card2 flex items-center justify-center text-2xl shrink-0">{a.emoji}</div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{a.nama}</div>
+                  <div className="text-gray-500 text-[13px]">{a.tipeLabel}</div>
+                </div>
+                {!modePilih && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(a.id); }}
+                    className="text-gray-600 hover:text-danger text-xl px-1"
+                    aria-label="Hapus artefak"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            {artifacts.map((a) => (
-              <div key={a.id} onClick={() => bukaArtefak(a)} className="bg-card rounded-2xl p-5 relative group cursor-pointer">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onDelete(a.id); }}
-                  className="absolute top-3 right-3 text-gray-600 hover:text-danger text-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Hapus artefak"
-                >
-                  ×
-                </button>
+            {artefakTerurut.map((a) => (
+              <div key={a.id} onClick={() => alihPilih(a)} className="bg-card rounded-2xl p-5 relative group cursor-pointer">
+                {modePilih ? (
+                  <span className={`absolute top-3 left-3 z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center ${terpilih.includes(a.id) ? "bg-accent border-accent text-[var(--vity-on-accent,white)]" : "border-white/70 bg-black/30"}`}>
+                    {terpilih.includes(a.id) && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    )}
+                  </span>
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(a.id); }}
+                    className="absolute top-3 right-3 text-gray-600 hover:text-danger text-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Hapus artefak"
+                  >
+                    ×
+                  </button>
+                )}
                 {a.thumb ? (
                   <img src={a.thumb} alt={a.nama} className="w-full h-28 object-cover rounded-xl mb-3" />
                 ) : (
@@ -735,6 +868,21 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
           </div>
         )}
       </div>
+      {modePilih && (
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 bg-card2 rounded-full shadow-2xl border border-white/10 pl-5 pr-2 py-2">
+          <span className="text-[15px] text-white whitespace-nowrap">{terpilih.length} dipilih</span>
+          <button
+            onClick={hapusTerpilih}
+            disabled={!terpilih.length}
+            className="px-4 py-1.5 rounded-full bg-danger text-white text-[15px] disabled:opacity-40"
+          >
+            Hapus
+          </button>
+          <button onClick={keluarModePilih} className="px-4 py-1.5 rounded-full bg-white/10 text-white text-[15px]">
+            Batal
+          </button>
+        </div>
+      )}
       {gambarDibuka && (
         <Lightbox src={gambarDibuka.src} nama={gambarDibuka.nama} onClose={() => setGambarDibuka(null)} />
       )}

@@ -199,7 +199,14 @@ function AppInner() {
     try {
       const raw = localStorage.getItem("vity_artifacts");
       const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
+      if (!Array.isArray(arr)) return [];
+      /* Artefak lama belum punya stempel waktu — dibuat diambil dari id-nya
+         (id = Date.now() + acak, jadi kira-kira waktu dibuatnya). */
+      return arr.map((a) => ({
+        ...a,
+        dibuat: typeof a.dibuat === "number" ? a.dibuat : typeof a.id === "number" ? a.id : Date.now(),
+        terakhirDibuka: typeof a.terakhirDibuka === "number" ? a.terakhirDibuka : null,
+      }));
     } catch {
       return [];
     }
@@ -210,6 +217,16 @@ function AppInner() {
     } catch {}
   }, [artifacts]);
   const [galeriFilter, setGaleriFilter] = useState("semua");
+  /* Urutan + tampilan Galeri (menu titik tiga) — tersimpan supaya tetap
+     sama saat dibuka lagi. */
+  const [galeriSort, setGaleriSort] = useState(() => {
+    try { return localStorage.getItem("vity_galeri_sort") || "terakhir-dibuka"; } catch { return "terakhir-dibuka"; }
+  });
+  const [galeriView, setGaleriView] = useState(() => {
+    try { return localStorage.getItem("vity_galeri_view") || "grid"; } catch { return "grid"; }
+  });
+  useEffect(() => { try { localStorage.setItem("vity_galeri_sort", galeriSort); } catch {} }, [galeriSort]);
+  useEffect(() => { try { localStorage.setItem("vity_galeri_view", galeriView); } catch {} }, [galeriView]);
   const [pendingKategori, setPendingKategori] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -246,10 +263,18 @@ function AppInner() {
         tipe,
         emoji: t?.emoji || "📄",
         tipeLabel: t?.label || tipe,
+        dibuat: Date.now(),
+        terakhirDibuka: null,
         ...(tipe === "gambar" && dataUrl ? { thumb: dataUrl } : {}),
         ...(tipe !== "gambar" && dataUrl ? { dataUrl } : {}),
       },
     ]);
+  };
+
+  /* Catat kapan sebuah artefak terakhir dibuka (dipakai urutan
+     "Terakhir dibuka" di menu titik tiga Galeri). */
+  const tandaiArtefakDibuka = (id) => {
+    setArtifacts((a) => a.map((x) => (x.id === id ? { ...x, terakhirDibuka: Date.now() } : x)));
   };
 
   const filteredArtifacts =
@@ -352,6 +377,11 @@ function AppInner() {
         onFilter={setGaleriFilter}
         onCreate={() => openSheet("artefak-form")}
         onDelete={(id) => { setArtifacts((a) => a.filter((x) => x.id !== id)); hapusFile(id).catch(() => {}); }}
+        sort={galeriSort}
+        onSort={setGaleriSort}
+        view={galeriView}
+        onView={setGaleriView}
+        onBuka={tandaiArtefakDibuka}
       />
     );
 
