@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { VityAvatar, I } from "./ui";
+import { VityAvatar, I, Lightbox } from "./ui";
 import { getDisplayName, teksSapaan } from "../lib/avatar";
+import { simpanBlobUrl, ambilBlobUrl, bukaFileLampiran } from "../lib/lampiran";
 
 /* Sapaan awal: asisten memperkenalkan diri — bukan lagi contoh obrolan
    soal harga LLM. Nama mengikuti "Edit nama" di profil. */
@@ -107,6 +108,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
      + masuk Artefak saat tekan kirim. Gambar dikecilkan dulu (maks 1024px,
      JPEG 0.8) supaya muat di localStorage. */
   const [lampiranSiap, setLampiranSiap] = useState([]);
+  const [gambarDibuka, setGambarDibuka] = useState(null);
   const fileInputRef = useRef(null);
   const tipeDariFile = (f) => {
     if (f.type.startsWith("image/")) return "gambar";
@@ -147,9 +149,12 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     const baru = [];
     for (const f of files) {
       try {
+        const id = `l${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
+        simpanBlobUrl(id, URL.createObjectURL(f));
         let dataUrl = null;
         if (f.type.startsWith("image/")) dataUrl = await kecilkanGambar(await bacaFile(f));
-        baru.push({ nama: f.name, tipe: tipeDariFile(f), ukuran: formatUkuran(f.size), dataUrl });
+        else if (f.size <= 1048576) dataUrl = await bacaFile(f);
+        baru.push({ id, nama: f.name, tipe: tipeDariFile(f), ukuran: formatUkuran(f.size), dataUrl });
       } catch {}
     }
     if (baru.length) setLampiranSiap((p) => [...p, ...baru]);
@@ -184,7 +189,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       pesanBaru.push({ role: "user", text: "", waktu: Date.now(), lampiran: lampiran[i] });
     }
     setMessages((m) => [...m, ...pesanBaru]);
-    for (const l of lampiran) onAddArtefak(l.nama, l.tipe, l.dataUrl);
+    for (const l of lampiran) onAddArtefak(l.nama, l.tipe, l.dataUrl, ambilBlobUrl(l.id));
     /* Cuma lampiran tanpa teks: tidak ada yang ditanyakan ke backend. */
     if (!text) return;
     /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
@@ -457,39 +462,62 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
               )}
               {m.role === "user" ? (
             <div key={idx} className="flex justify-end group">
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1">
-                  <AksiPesan idx={idx} isUser />
-                  <div
+              <div className="flex flex-col items-end gap-1.5">
+                {/* Lampiran di luar bubble biru (kayak di Muse): gambar tampil
+                    polos tanpa latar, file jadi kartu sendiri — ketuk buat buka. */}
+                {m.lampiran && m.lampiran.dataUrl && m.lampiran.tipe === "gambar" && (
+                  <img
                     {...bubbleProps(idx)}
-                    className="bg-accent text-[var(--vity-on-accent,white)] rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                    src={m.lampiran.dataUrl}
+                    alt={m.lampiran.nama}
+                    onClick={() => setGambarDibuka({ src: m.lampiran.dataUrl, nama: m.lampiran.nama })}
+                    className="max-w-[260px] max-h-[260px] w-auto h-auto rounded-2xl object-cover cursor-pointer select-none"
+                  />
+                )}
+                {m.lampiran && !(m.lampiran.dataUrl && m.lampiran.tipe === "gambar") && (
+                  <button
+                    onClick={() => bukaFileLampiran(m.lampiran)}
+                    className="flex items-center gap-2.5 bg-card2 rounded-2xl px-3 py-2.5 text-left"
                   >
-                    {m.replyTo && (
-                      <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
-                        <div className="text-[12px] font-medium text-white/80">
-                          {m.replyTo.role === "asisten" ? namaAsisten : "Kamu"}
-                        </div>
-                        <div className="text-[13px] text-white/70 line-clamp-2 whitespace-pre-wrap break-words">
-                          {m.replyTo.text}
-                        </div>
-                      </div>
-                    )}
-                    {m.lampiran?.dataUrl && m.lampiran.tipe === "gambar" && (
-                      <img src={m.lampiran.dataUrl} alt={m.lampiran.nama} className="max-w-[260px] max-h-[260px] w-auto h-auto rounded-2xl object-cover mb-1.5" />
-                    )}
-                    {m.lampiran && !(m.lampiran.dataUrl && m.lampiran.tipe === "gambar") && (
-                      <div className="flex items-center gap-2.5 bg-black/20 rounded-2xl px-3 py-2.5 mb-1.5 text-left">
-                        <span className="text-xl shrink-0">📄</span>
-                        <span className="min-w-0">
-                          <span className="block text-[14px] font-medium truncate max-w-[200px]">{m.lampiran.nama}</span>
-                          <span className="block text-[12px] text-white/70">{m.lampiran.ukuran}</span>
-                        </span>
-                      </div>
-                    )}
-                    {m.text}
+                    <span className="text-xl shrink-0">📄</span>
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-medium truncate max-w-[200px] text-white">{m.lampiran.nama}</span>
+                      <span className="block text-[12px] text-gray-400">{m.lampiran.ukuran}</span>
+                    </span>
+                  </button>
+                )}
+                {m.replyTo && !m.text && (
+                  <div className="rounded-xl bg-card2 px-3 py-1.5 text-left max-w-[85%]">
+                    <div className="text-[12px] font-medium text-gray-300">
+                      {m.replyTo.role === "asisten" ? namaAsisten : "Kamu"}
+                    </div>
+                    <div className="text-[13px] text-gray-400 line-clamp-2 whitespace-pre-wrap break-words">
+                      {m.replyTo.text}
+                    </div>
                   </div>
-                </div>
-                <TombolTitik idx={idx} />
+                )}
+                {m.text && (
+                  <div className="flex items-center gap-1">
+                    <AksiPesan idx={idx} isUser />
+                    <div
+                      {...bubbleProps(idx)}
+                      className="bg-accent text-[var(--vity-on-accent,white)] rounded-3xl rounded-br-lg px-5 py-3 max-w-[85%] text-[17px] whitespace-pre-wrap select-none cursor-pointer"
+                    >
+                      {m.replyTo && (
+                        <div className="mb-1.5 rounded-xl bg-black/20 px-3 py-1.5 text-left">
+                          <div className="text-[12px] font-medium text-white/80">
+                            {m.replyTo.role === "asisten" ? namaAsisten : "Kamu"}
+                          </div>
+                          <div className="text-[13px] text-white/70 line-clamp-2 whitespace-pre-wrap break-words">
+                            {m.replyTo.text}
+                          </div>
+                        </div>
+                      )}
+                      {m.text}
+                    </div>
+                  </div>
+                )}
+                <TombolTitik idx={idx} className="mt-0" />
               </div>
             </div>
           ) : (
@@ -711,6 +739,9 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
           </button>
         </div>
       </div>
+      {gambarDibuka && (
+        <Lightbox src={gambarDibuka.src} nama={gambarDibuka.nama} onClose={() => setGambarDibuka(null)} />
+      )}
     </div>
   );
 }

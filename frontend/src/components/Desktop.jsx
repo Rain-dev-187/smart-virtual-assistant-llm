@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { I, VityAvatar, SheetHeader } from "./ui";
+import { I, VityAvatar, SheetHeader, Lightbox } from "./ui";
 import Drawer from "./Drawer";
 import { getDisplayName, setDisplayName, avatarApi, useAvatar } from "../lib/avatar";
+import { ambilBlobUrl } from "../lib/lampiran";
 
 /* ---------- Ikon SVG kecil ---------- */
 const sw = { fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
@@ -601,6 +602,14 @@ export function SasaranPage({ goals, onSelectKategori, onDeleteGoal }) {
 
 /* ---------- Halaman Galeri / Artefak ---------- */
 export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate, onDelete }) {
+  const [gambarDibuka, setGambarDibuka] = useState(null);
+  /* Ketuk kartu buat buka: gambar tampil layar penuh, dokumen dibuka di
+     tab baru (blob sesi ini kalau ada, kalau tidak data URL tersimpan). */
+  const bukaArtefak = (a) => {
+    if (a.thumb) return setGambarDibuka({ src: a.thumb, nama: a.nama });
+    const url = ambilBlobUrl(a.id) || a.dataUrl || null;
+    if (url) window.open(url, "_blank");
+  };
   const [menuKategori, setMenuKategori] = useState(false);
   const [menuOpsi, setMenuOpsi] = useState(false);
   return (
@@ -699,9 +708,9 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {artifacts.map((a) => (
-              <div key={a.id} className="bg-card rounded-2xl p-5 relative group">
+              <div key={a.id} onClick={() => bukaArtefak(a)} className="bg-card rounded-2xl p-5 relative group cursor-pointer">
                 <button
-                  onClick={() => onDelete(a.id)}
+                  onClick={(e) => { e.stopPropagation(); onDelete(a.id); }}
                   className="absolute top-3 right-3 text-gray-600 hover:text-danger text-xl opacity-0 group-hover:opacity-100 transition-opacity"
                   aria-label="Hapus artefak"
                 >
@@ -719,6 +728,9 @@ export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate,
           </div>
         )}
       </div>
+      {gambarDibuka && (
+        <Lightbox src={gambarDibuka.src} nama={gambarDibuka.nama} onClose={() => setGambarDibuka(null)} />
+      )}
     </div>
   );
 }

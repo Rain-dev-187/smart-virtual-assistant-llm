@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AuthScreen from "./components/AuthScreen";
 import AvatarStudio from "./components/AvatarStudio";
 import { AvatarProvider } from "./lib/avatar";
+import { simpanBlobUrl } from "./lib/lampiran";
 import ChatScreen from "./components/ChatScreen";
 import Drawer from "./components/Drawer";
 import { MenuSheet } from "./components/SettingsMenu";
@@ -226,11 +227,24 @@ function AppInner() {
     back();
   };
 
-  const addArtefak = (nama, tipe, thumb) => {
+  /* dataUrl: gambar jadi thumb, dokumen kecil (<=1 MB) tersimpan supaya
+     bisa dibuka lagi; blobUrl (file asli sesi ini) cuma di cache runtime,
+     tidak ikut tersimpan ke localStorage. */
+  const addArtefak = (nama, tipe, dataUrl, blobUrl) => {
     const t = TIPE_ARTEFAK.find((x) => x.key === tipe);
+    const id = Date.now() + Math.random();
+    if (blobUrl) simpanBlobUrl(id, blobUrl);
     setArtifacts((a) => [
       ...a,
-      { id: Date.now() + Math.random(), nama, tipe, emoji: t?.emoji || "📄", tipeLabel: t?.label || tipe, ...(thumb ? { thumb } : {}) },
+      {
+        id,
+        nama,
+        tipe,
+        emoji: t?.emoji || "📄",
+        tipeLabel: t?.label || tipe,
+        ...(tipe === "gambar" && dataUrl ? { thumb: dataUrl } : {}),
+        ...(tipe !== "gambar" && dataUrl ? { dataUrl } : {}),
+      },
     ]);
   };
 

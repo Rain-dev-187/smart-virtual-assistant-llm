@@ -158,7 +158,7 @@ export function Sheet({ children, onClose, labelled = true }) {
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div
         ref={panelRef}
-        className="relative w-full max-w-md md:max-w-lg bg-card rounded-t-3xl md:rounded-3xl max-h-[88vh] md:max-h-[85vh] flex flex-col overflow-hidden"
+        className="relative w-full max-w-md md:max-w-lg bg-card rounded-t-3xl md:rounded-3xl max-h-[80vh] md:max-h-[85vh] flex flex-col overflow-hidden"
         style={{
           transform: dragY ? `translateY(${dragY}px)` : undefined,
           transition: dragging ? "none" : "transform 200ms ease-out",
@@ -168,7 +168,7 @@ export function Sheet({ children, onClose, labelled = true }) {
         onTouchEnd={onTouchEnd}
       >
         {labelled && (
-          <div className="pt-3 pb-1 flex justify-center shrink-0 md:hidden">
+          <div className="pt-3 pb-1 flex justify-center shrink-0 md:hidden [touch-action:none]">
             <div className="w-10 h-1 rounded-full bg-gray-600" />
           </div>
         )}
@@ -178,19 +178,54 @@ export function Sheet({ children, onClose, labelled = true }) {
   );
 }
 
+/* ---------- Penampil gambar layar penuh ---------- */
+export function Lightbox({ src, nama, onClose }) {
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white text-2xl leading-none flex items-center justify-center"
+        aria-label="Tutup"
+      >
+        ×
+      </button>
+      <img
+        src={src}
+        alt={nama || "Gambar"}
+        className="max-w-full max-h-full object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      />
+      {nama && (
+        <div className="absolute bottom-4 left-0 right-0 text-center text-sm text-gray-300 truncate px-6">
+          {nama}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ---------- Header sheet dengan tombol back ---------- */
 export function SheetHeader({ title, onBack }) {
   return (
     <div className="flex items-center gap-2 px-4 py-3 sticky top-0 bg-card z-10">
-      <button
-        onClick={onBack}
-        className="w-9 h-9 rounded-full bg-card2 flex items-center justify-center text-white"
-        aria-label="Kembali"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="w-9 h-9 rounded-full bg-card2 flex items-center justify-center text-white"
+          aria-label="Kembali"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+      )}
       <h2 className="text-xl font-semibold">{title}</h2>
     </div>
   );

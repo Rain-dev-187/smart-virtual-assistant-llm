@@ -126,7 +126,7 @@ export default function AvatarStudio({ onBack }) {
 
   return (
     <div>
-      <SheetHeader title="Avatar VITY" onBack={onBack} />
+      <SheetHeader title="Avatar VITY" />
 
       {/* Tab */}
       <div className="flex gap-1 mx-4 mt-1 bg-card2 rounded-full p-1">
