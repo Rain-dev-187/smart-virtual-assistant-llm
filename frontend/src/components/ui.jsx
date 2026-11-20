@@ -259,7 +259,7 @@ const MENU_3 = (
    Dulu fixed top-0: saat toolbar browser HP muncul/hilang atau keyboard
    buka-tutup, bar ini dan konten 100dvh tidak sepakat soal "atas" — halaman
    terasa ngangkat/lompat. Sekarang ikut alur flex kolom App. */
-export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
+export function MobileTopBar({ onOpenDrawer, onOpenProfile, onCreateChat, view }) {
   return (
     <div className="md:hidden shrink-0 flex items-center justify-between px-2 pt-1">
       <button
@@ -280,7 +280,17 @@ export function MobileTopBar({ onOpenDrawer, onOpenProfile, view }) {
       ) : (
         <div className="w-[56px] shrink-0" />
       )}
-      <div className="w-11 shrink-0" />
+      {view === "chat" ? (
+        <button
+          onClick={onCreateChat}
+          className="w-11 h-11 flex items-center justify-center text-white"
+          aria-label="Obrolan baru"
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+        </button>
+      ) : (
+        <div className="w-11 shrink-0" />
+      )}
     </div>
   );
 }

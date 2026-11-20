@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { I } from "./ui";
+import { labelWaktuDaftar } from "../lib/chats";
 
 const PIN_ICON = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -47,6 +48,10 @@ export default function Drawer({
   asSidebar = false,
   pinned = false,
   onTogglePin = () => {},
+  chats = [],
+  activeChatId = "",
+  onSelectChat = () => {},
+  onCreateChat = () => {},
 }) {
   const [page, setPage] = useState("main");
   const [query, setQuery] = useState("");
@@ -68,7 +73,10 @@ export default function Drawer({
       preview: "kalo untuk LLM ada harganya gk",
       time: "baru saja",
       wa: false,
-      action: () => onClose(),
+      action: () => {
+        if (chats[0]) onSelectChat(chats[0].id);
+        onClose();
+      },
     },
     {
       id: "wa",
@@ -198,7 +206,10 @@ export default function Drawer({
         ) : (
           <>
             <button
-              onClick={onClose}
+              onClick={() => {
+                if (chats[0]) onSelectChat(chats[0].id);
+                onClose();
+              }}
               className="w-full text-left px-5 py-3 text-[17px] text-white bg-card2/60"
             >
               Obrolan utama
@@ -265,24 +276,60 @@ export default function Drawer({
         </div>
       </div>
     ) : (
-      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-        <span className="w-20 h-20 rounded-full bg-card2 flex items-center justify-center text-gray-400 mb-6">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-            <path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" />
-            <circle cx="9" cy="12" r="0.8" fill="currentColor" />
-            <circle cx="13" cy="12" r="0.8" fill="currentColor" />
-          </svg>
-        </span>
-        <h3 className="text-xl font-semibold mb-3">Mulai obrolan selingan</h3>
-        <p className="text-gray-400 text-[15px] leading-relaxed">
-          Obrolan selingan adalah cara opsional untuk mengatur percakapan Anda berdasarkan topik.
-        </p>
-        <button
-          onClick={() => setPage("main")}
-          className="mt-8 text-accent text-[16px]"
-        >
-          Kembali
-        </button>
+      /* Daftar obrolan selingan: tiap baris bisa dibuka, tombol di atas
+         buat obrolan baru. */
+      <div className="flex-1 overflow-y-auto no-scrollbar py-4 flex flex-col">
+        <div className="px-4 pb-3 flex items-center gap-1">
+          <button
+            onClick={() => setPage("main")}
+            className="w-10 h-10 rounded-full hover:bg-card2 flex items-center justify-center text-gray-300 transition-colors shrink-0"
+            aria-label="Kembali"
+          >
+            {BACK_ICON}
+          </button>
+          <span className="text-white text-[17px] font-medium flex-1 min-w-0 truncate">Obrolan selingan</span>
+          <button
+            onClick={() => {
+              onCreateChat();
+              if (!asSidebar) onClose();
+            }}
+            className="h-9 px-3 rounded-full bg-accent text-white text-[14px] font-medium flex items-center gap-1.5 shrink-0"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Obrolan baru
+          </button>
+        </div>
+        <div className="px-2">
+          {chats.length === 0 ? (
+            <div className="px-3 py-8 text-center text-gray-500 text-[15px]">
+              Belum ada obrolan — ketuk "Obrolan baru" di atas.
+            </div>
+          ) : (
+            chats.map((c) => {
+              const last = c.messages[c.messages.length - 1];
+              const aktif = c.id === activeChatId;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    onSelectChat(c.id);
+                    if (!asSidebar) onClose();
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left transition-colors ${aktif ? "bg-card2/60" : "hover:bg-card2/60"}`}
+                >
+                  <span className="w-10 h-10 rounded-full bg-card2 flex items-center justify-center shrink-0 text-gray-300">
+                    {I.chat}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-white text-[16px] font-medium truncate">{c.title}</span>
+                    <span className="block text-gray-500 text-[14px] truncate">{last ? last.text : ""}</span>
+                  </span>
+                  {last?.waktu ? <span className="text-gray-600 text-[12px] shrink-0">{labelWaktuDaftar(last.waktu)}</span> : null}
+                </button>
+              );
+            })
+          )}
+        </div>
       </div>
     );
 

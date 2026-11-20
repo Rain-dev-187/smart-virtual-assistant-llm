@@ -23,24 +23,9 @@ const INITIAL = [
      auth hanya bila API_KEY di .env backend terisi; kalau kosong, auth mati). */
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const API_KEY = import.meta.env.VITE_API_KEY || "";
-const SESSION_KEY = "vity_session_id";
 
-const getSessionId = () => {
-  try {
-    return localStorage.getItem(SESSION_KEY) || "";
-  } catch {
-    return "";
-  }
-};
-
-const saveSessionId = (id) => {
-  if (!id) return;
-  try {
-    localStorage.setItem(SESSION_KEY, id);
-  } catch {
-    /* localStorage tidak tersedia: sesi jalan tanpa persistensi */
-  }
-};
+/* Sesi backend (session_id) sekarang milik tiap obrolan dan diatur App
+   lewat props — ChatScreen tidak lagi baca/tulis localStorage sendiri. */
 
 /* ---------- Pemisah hari di chat ----------
    Bukan jam di tiap pesan: hanya satu chip tiap ganti hari, di atas pesan
@@ -66,8 +51,8 @@ function labelPemisahHari(ts) {
   return `${hari}, ${tanggal}`;
 }
 
-export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false }) {
-  const [messages, setMessages] = useState(INITIAL);
+export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false, chat, sessionId = "", onMessagesChange = () => {}, onSessionIdChange = () => {} }) {
+  const [messages, setMessages] = useState(chat?.messages?.length ? chat.messages : INITIAL);
   const [draft, setDraft] = useState("");
   const [menu, setMenu] = useState(null); // {x, y, idx}
   const [replyTo, setReplyTo] = useState(null); // pesan yang dibalas
@@ -88,6 +73,25 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     return () => window.removeEventListener("vity:display-name", onNama);
   }, []);
 
+  /* Ganti obrolan: muat pesan obrolan itu (sapaan ikut nama terbaru),
+     dan bersihkan balasan/menu yang nyangkut dari obrolan sebelumnya. */
+  useEffect(() => {
+    if (!chat) return;
+    setMessages(
+      (chat.messages?.length ? chat.messages : INITIAL).map((mm, i) =>
+        i === 0 && mm.sapaan ? { ...mm, text: teksSapaan(namaAsisten) } : mm
+      )
+    );
+    setReplyTo(null);
+    setMenu(null);
+    setPicker(null);
+  }, [chat?.id]);
+
+  /* Tiap pesan berubah, simpan ke obrolan aktif (judul otomatis ikut). */
+  useEffect(() => {
+    onMessagesChange(messages);
+  }, [messages]);
+
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
@@ -107,13 +111,13 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       const res = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ message: text, session_id: getSessionId() }),
+        body: JSON.stringify({ message: text, session_id: sessionId }),
       });
       if (!res.ok) {
         throw new Error(res.status === 401 ? "unauthorized" : `http-${res.status}`);
       }
       const data = await res.json();
-      if (data.session_id) saveSessionId(data.session_id);
+      if (data.session_id) onSessionIdChange(data.session_id);
       setMessages((m) => [
         ...m,
         { role: "asisten", text: data.reply || "(backend tidak mengembalikan balasan)", waktu: Date.now() },

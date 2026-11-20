@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AuthScreen from "./components/AuthScreen";
 import AvatarStudio from "./components/AvatarStudio";
 import { AvatarProvider } from "./lib/avatar";
@@ -22,6 +22,15 @@ import {
   GALERI_LABEL,
   TIPE_ARTEFAK,
 } from "./components/Desktop";
+import {
+  muatObrolan,
+  simpanObrolan,
+  obrolanAwal,
+  buatObrolanBaru,
+  judulDariPesan,
+  ACTIVE_CHAT_KEY,
+  SESSION_KEY,
+} from "./lib/chats";
 
 function AppInner() {
   const [authed, setAuthed] = useState(() => {
@@ -53,6 +62,69 @@ function AppInner() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [stack, setStack] = useState([]); // tumpukan halaman bottom-sheet
   const [view, setView] = useState("chat"); // chat | sasaran | galeri
+
+  /* ---------- Obrolan selingan (multi-chat) ----------
+     Daftar obrolan kesimpen di localStorage; tiap obrolan punya sesi
+     backend sendiri + pesan-pesannya sendiri, jadi bisa dibuka lagi
+     besok (chip pemisah harinya kepakai). Obrolan pertama = obrolan
+     yang selama ini dipakai, sesinya ikut pindah. */
+  const [chats, setChats] = useState(() => muatObrolan() || [obrolanAwal()]);
+  const [activeChatId, setActiveChatId] = useState(() => {
+    try {
+      return localStorage.getItem(ACTIVE_CHAT_KEY) || "";
+    } catch {
+      return "";
+    }
+  });
+  const activeChat = chats.find((c) => c.id === activeChatId) || chats[0];
+  useEffect(() => {
+    simpanObrolan(chats);
+  }, [chats]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(ACTIVE_CHAT_KEY, activeChat.id);
+    } catch {}
+  }, [activeChat.id]);
+
+  /* KontrolData baca session_id dari localStorage key yang sama, jadi
+     sesi obrolan aktif selalu dicerminkan ke sana. */
+  const cerminkanSesi = (sessionId) => {
+    try {
+      localStorage.setItem(SESSION_KEY, sessionId || "");
+    } catch {}
+  };
+  const pilihObrolan = (id) => {
+    const target = chats.find((c) => c.id === id);
+    if (!target) return;
+    setActiveChatId(id);
+    cerminkanSesi(target.sessionId);
+    setView("chat");
+  };
+  const buatObrolan = () => {
+    const baru = buatObrolanBaru();
+    setChats((cs) => [baru, ...cs]);
+    setActiveChatId(baru.id);
+    cerminkanSesi("");
+    setView("chat");
+  };
+  const updatePesanObrolan = (messages) => {
+    setChats((cs) =>
+      cs.map((c) => {
+        if (c.id !== activeChat.id) return c;
+        /* Judul otomatis dari pesan pertama user (selama masih "Obrolan baru"). */
+        let title = c.title;
+        if (title === "Obrolan baru") {
+          const pertama = messages.find((m) => m.role === "user");
+          if (pertama) title = judulDariPesan(pertama.text);
+        }
+        return { ...c, title, messages, updatedAt: Date.now() };
+      })
+    );
+  };
+  const updateSesiObrolan = (sessionId) => {
+    cerminkanSesi(sessionId);
+    setChats((cs) => cs.map((c) => (c.id === activeChat.id ? { ...c, sessionId } : c)));
+  };
   const [chatSide, setChatSide] = useState(false);
   const [chatPinned, setChatPinned] = useState(() => {
     try {
@@ -192,6 +264,10 @@ function AppInner() {
         onToggleChatSide={() => setChatSide((s) => !s)}
         onOpenProfile={openProfile}
         panelOpen={rightOpen}
+        chat={activeChat}
+        sessionId={activeChat.sessionId}
+        onMessagesChange={updatePesanObrolan}
+        onSessionIdChange={updateSesiObrolan}
       />
     ) : view === "sasaran" ? (
       <SasaranPage
@@ -231,6 +307,7 @@ function AppInner() {
         <MobileTopBar
           onOpenDrawer={() => setDrawerOpen(true)}
           onOpenProfile={openProfile}
+          onCreateChat={buatObrolan}
           view={view}
         />
         <div className="flex-1 min-h-0 relative">{mainView}</div>
@@ -244,6 +321,10 @@ function AppInner() {
           }}
           pinned={chatPinned}
           onTogglePin={toggleChatPin}
+          chats={chats}
+          activeChatId={activeChat.id}
+          onSelectChat={pilihObrolan}
+          onCreateChat={buatObrolan}
         />
       </div>
 
@@ -273,6 +354,10 @@ function AppInner() {
               onOpenSheet={(page) => openSheet(page)}
               pinned={chatPinned}
               onTogglePin={toggleChatPin}
+              chats={chats}
+              activeChatId={activeChat.id}
+              onSelectChat={pilihObrolan}
+              onCreateChat={buatObrolan}
             />
           </aside>
         )}
