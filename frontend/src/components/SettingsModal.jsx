@@ -116,7 +116,7 @@ export default function SettingsModal({ onClose, onLogout }) {
 
   const nav = (
     <div className="flex flex-col h-full">
-      <div className="px-5 pt-5 pb-3 shrink-0">
+      <div className="px-5 pt-5 pb-3 shrink-0 [touch-action:none]">
         <h2 className="text-[22px] font-semibold text-white">Pengaturan</h2>
       </div>
       <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-3">
@@ -153,7 +153,7 @@ export default function SettingsModal({ onClose, onLogout }) {
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
       <div
         ref={panelRef}
-        className="relative w-full md:max-w-4xl h-[88vh] md:h-[80vh] bg-card rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-pop-in"
+        className="relative w-full md:max-w-4xl h-[80vh] bg-card rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl animate-pop-in"
         style={{
           transform: dragY ? `translateY(${dragY}px)` : undefined,
           transition: dragging ? "none" : "transform 200ms ease-out",
@@ -162,8 +162,9 @@ export default function SettingsModal({ onClose, onLogout }) {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Garis pegangan buat geser tutup — hanya di HP */}
-        <div className="pt-3 pb-1 flex justify-center shrink-0 md:hidden">
+        {/* Garis pegangan buat geser tutup — hanya di HP. touch-action none
+            supaya browser tidak merebut gestur ini jadi pull-to-refresh. */}
+        <div className="pt-3 pb-2 flex justify-center shrink-0 md:hidden [touch-action:none]">
           <div className="w-10 h-1 rounded-full bg-gray-600" />
         </div>
         <div className="flex-1 flex min-h-0">
@@ -178,7 +179,7 @@ export default function SettingsModal({ onClose, onLogout }) {
 
         {/* Kolom kanan: konten */}
         <div className={`flex-1 h-full flex-col min-w-0 ${mDetail ? "flex" : "hidden md:flex"}`}>
-          <div className="flex items-center gap-2 px-5 py-4 shrink-0 border-b border-white/5">
+          <div className="flex items-center gap-2 px-5 py-4 shrink-0 border-b border-white/5 [touch-action:none]">
             <button
               onClick={() => setMDetail(false)}
               className="md:hidden w-9 h-9 rounded-full hover:bg-card2 flex items-center justify-center text-gray-300"

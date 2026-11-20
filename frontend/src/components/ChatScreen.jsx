@@ -101,9 +101,12 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   }, [messages, chat?.id]);
 
   /* Unggah file dari chat: tombol + di samping kolom ketik membuka
-     pemilih file bawaan HP (Galeri / Kamera / File / Drive). Gambar
-     dikecilkan dulu (maks 1024px, JPEG 0.8) supaya muat di localStorage;
-     file-nya juga masuk ke Artefak sesuai tipenya. */
+     pemilih file bawaan HP (Galeri / Kamera / File / Drive). File yang
+     dipilih TIDAK langsung terkirim — disiapkan dulu di atas kolom ketik
+     (kayak di Muse) supaya bisa ngetik dulu; baru terkirim bareng pesan
+     + masuk Artefak saat tekan kirim. Gambar dikecilkan dulu (maks 1024px,
+     JPEG 0.8) supaya muat di localStorage. */
+  const [lampiranSiap, setLampiranSiap] = useState([]);
   const fileInputRef = useRef(null);
   const tipeDariFile = (f) => {
     if (f.type.startsWith("image/")) return "gambar";
@@ -141,23 +144,22 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
   const pilihFile = async (e) => {
     const files = [...(e.target.files || [])];
     e.target.value = "";
+    const baru = [];
     for (const f of files) {
       try {
         let dataUrl = null;
         if (f.type.startsWith("image/")) dataUrl = await kecilkanGambar(await bacaFile(f));
-        const tipe = tipeDariFile(f);
-        setMessages((m) => [
-          ...m,
-          { role: "user", text: "", waktu: Date.now(), lampiran: { nama: f.name, tipe, ukuran: formatUkuran(f.size), dataUrl } },
-        ]);
-        onAddArtefak(f.name, tipe, dataUrl);
+        baru.push({ nama: f.name, tipe: tipeDariFile(f), ukuran: formatUkuran(f.size), dataUrl });
       } catch {}
     }
+    if (baru.length) setLampiranSiap((p) => [...p, ...baru]);
   };
+  const hapusLampiranSiap = (i) => setLampiranSiap((p) => p.filter((_, j) => j !== i));
 
   const send = async () => {
     const text = draft.trim();
-    if (!text || sending) return;
+    const lampiran = lampiranSiap;
+    if ((!text && !lampiran.length) || sending) return;
     /* Kutipan balasan ikut tersimpan di pesan yang dikirim — jadi setelah
        balasan asisten muncul pun, bubble ini tetap menunjukkan pesan apa
        yang dibalas (bukan cuma pratinjau di atas kolom ketik). Disimpan
@@ -165,7 +167,26 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     const quoted = replyTo;
     setDraft("");
     setReplyTo(null);
-    setMessages((m) => [...m, { role: "user", text, waktu: Date.now(), replyTo: quoted ? { text: quoted.text, role: quoted.role } : null }]);
+    setLampiranSiap([]);
+    /* Lampiran yang disiapkan ikut terkirim bareng pesan ini — satu bubble
+       per lampiran (bubble pertama membawa teksnya), lalu masuk Artefak. */
+    const pesanBaru = [];
+    if (text) {
+      pesanBaru.push({
+        role: "user",
+        text,
+        waktu: Date.now(),
+        replyTo: quoted ? { text: quoted.text, role: quoted.role } : null,
+        ...(lampiran[0] ? { lampiran: lampiran[0] } : {}),
+      });
+    }
+    for (let i = text ? 1 : 0; i < lampiran.length; i++) {
+      pesanBaru.push({ role: "user", text: "", waktu: Date.now(), lampiran: lampiran[i] });
+    }
+    setMessages((m) => [...m, ...pesanBaru]);
+    for (const l of lampiran) onAddArtefak(l.nama, l.tipe, l.dataUrl);
+    /* Cuma lampiran tanpa teks: tidak ada yang ditanyakan ke backend. */
+    if (!text) return;
     /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
     setSending(true);
     try {
@@ -636,6 +657,32 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
               <div className="text-[13px] text-gray-400 truncate">{replyTo.text}</div>
             </div>
             <button onClick={() => setReplyTo(null)} className="text-gray-500 hover:text-white text-xl leading-none" aria-label="Batalkan balasan">×</button>
+          </div>
+        )}
+        {lampiranSiap.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mx-1">
+            {lampiranSiap.map((l, i) => (
+              <div key={`${l.nama}-${i}`} className="relative shrink-0">
+                {l.dataUrl && l.tipe === "gambar" ? (
+                  <img src={l.dataUrl} alt={l.nama} className="w-16 h-16 rounded-xl object-cover" />
+                ) : (
+                  <div className="flex items-center gap-2 bg-card2 rounded-xl px-3 h-16 max-w-[220px]">
+                    <span className="text-xl shrink-0">📄</span>
+                    <span className="min-w-0">
+                      <span className="block text-[13px] font-medium truncate">{l.nama}</span>
+                      <span className="block text-[12px] text-gray-400">{l.ukuran}</span>
+                    </span>
+                  </div>
+                )}
+                <button
+                  onClick={() => hapusLampiranSiap(i)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-black/80 border border-white/20 text-white text-[13px] leading-none flex items-center justify-center"
+                  aria-label="Hapus lampiran"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         )}
         <div className="flex items-center gap-2 bg-card md:bg-transparent md:border md:border-white/15 rounded-full pl-2 pr-2 py-2">
