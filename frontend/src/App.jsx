@@ -319,6 +319,8 @@ function AppInner() {
       <GaleriPage
         artifacts={filteredArtifacts}
         filterLabel={GALERI_LABEL[galeriFilter]}
+        filter={galeriFilter}
+        onFilter={setGaleriFilter}
         onCreate={() => openSheet("artefak-form")}
         onDelete={(id) => setArtifacts((a) => a.filter((x) => x.id !== id))}
       />

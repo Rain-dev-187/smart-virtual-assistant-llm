@@ -600,18 +600,96 @@ export function SasaranPage({ goals, onSelectKategori, onDeleteGoal }) {
 }
 
 /* ---------- Halaman Galeri / Artefak ---------- */
-export function GaleriPage({ artifacts, filterLabel, onCreate, onDelete }) {
+export function GaleriPage({ artifacts, filterLabel, filter, onFilter, onCreate, onDelete }) {
+  const [menuKategori, setMenuKategori] = useState(false);
+  const [menuOpsi, setMenuOpsi] = useState(false);
   return (
     <div className="h-full overflow-y-auto no-scrollbar">
       <div className="max-w-5xl mx-auto px-6 pt-14 pb-24 md:py-8">
-        <div className="flex items-center justify-between mb-10 flex-wrap gap-3">
-          <h1 className="text-[28px] font-bold">{filterLabel}</h1>
+        {/* Header ala Spaces: judul bisa diketuk buat ganti kategori,
+            titik tiga buat opsi, tombol + bundar buat artefak baru. */}
+        <div className="relative flex items-center justify-between mb-10 flex-wrap gap-3">
+          <button
+            onClick={() => {
+              setMenuKategori((o) => !o);
+              setMenuOpsi(false);
+            }}
+            className="flex items-center gap-1 text-[28px] font-bold"
+            aria-label="Pilih kategori artefak"
+          >
+            {filterLabel}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2.2" strokeLinecap="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
           <div className="flex items-center gap-2">
-            <button className="bg-card2 text-white rounded-full px-5 py-2.5 text-[15px] font-medium hover:bg-white/10">Pilih</button>
-            <button onClick={onCreate} className="bg-accent text-[var(--vity-on-accent,white)] rounded-full px-5 py-2.5 text-[15px] font-medium hover:opacity-90">
-              + Buat artefak
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setMenuOpsi((o) => !o);
+                  setMenuKategori(false);
+                }}
+                className="w-11 h-11 rounded-full bg-card2 flex items-center justify-center text-xl"
+                aria-label="Opsi"
+              >
+                ⋯
+              </button>
+              {menuOpsi && (
+                <>
+                  <div className="fixed inset-0 z-10 cursor-default" onClick={() => setMenuOpsi(false)} />
+                  <div className="absolute right-0 top-12 z-20 w-56 bg-card2 rounded-2xl shadow-2xl border border-white/5 overflow-hidden animate-pop-in">
+                    <button
+                      onClick={() => {
+                        onCreate();
+                        setMenuOpsi(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 text-left transition-colors"
+                    >
+                      <span className="text-gray-300 shrink-0 text-xl leading-none">+</span>
+                      <span className="flex-1 text-[15px] text-white leading-snug">Buat artefak</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              onClick={onCreate}
+              className="w-11 h-11 rounded-full bg-accent text-[var(--vity-on-accent,white)] flex items-center justify-center text-3xl leading-none"
+              aria-label="Buat artefak"
+            >
+              +
             </button>
           </div>
+          {menuKategori && (
+            <>
+              <div className="fixed inset-0 z-10 cursor-default" onClick={() => setMenuKategori(false)} />
+              <div className="absolute left-0 top-14 z-20 w-72 max-w-[calc(100vw-3rem)] bg-card2 rounded-2xl shadow-2xl border border-white/5 overflow-hidden animate-pop-in py-2">
+                {GALERI_NAV.map((g, gi) => (
+                  <div key={gi} className="mb-1 px-2">
+                    {g.section && <div className="px-3 pt-2 pb-1 text-gray-500 text-[13px]">{g.section}</div>}
+                    {g.items.map((it) => (
+                      <button
+                        key={it.key}
+                        onClick={() => {
+                          onFilter(it.key);
+                          setMenuKategori(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-[15px] text-white hover:bg-white/5 transition-colors"
+                      >
+                        <span className="shrink-0 text-gray-300">{it.icon}</span>
+                        <span className="flex-1">{it.label}</span>
+                        {filter === it.key && (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent shrink-0">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         {artifacts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-gray-600">
