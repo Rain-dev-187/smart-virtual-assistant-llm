@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { DEFAULT_AVATAR, useAvatar } from "../lib/avatar";
 import { urlFileLampiranAsync } from "../lib/lampiran";
+import { salinTeks, unggahUntukDibagikan } from "../lib/share";
 
 /* ---------- Bagian topi avatar ---------- */
 function AvatarHat({ hat }) {
@@ -185,21 +186,45 @@ export function Lightbox({ items, index, onIndex, onClose, onDelete }) {
   const item = items[index] || null;
   const [src, setSrc] = useState(null);
   const [gagal, setGagal] = useState(false);
+  /* Sheet Share ala Muse (Salin link + WhatsApp). */
+  const [sheetBagi, setSheetBagi] = useState(false);
+  const [tautan, setTautan] = useState(null);
+  const [statusBagi, setStatusBagi] = useState("idle"); // idle | mengunggah | menyiapkan-wa | disalin | gagal
+  const [pesanBagi, setPesanBagi] = useState("");
   /* URL gambar diambil dari blob sesi / IndexedDB / data URL — yang dibuka
      bisa jadi file asli (resolusi penuh), bukan cuma thumb kecil. */
   useEffect(() => {
     if (!item) return undefined;
     let hidup = true;
+    let blobBuatan = null;
     setSrc(null);
     setGagal(false);
-    urlFileLampiranAsync(item).then((u) => {
+    setTautan(null);
+    setStatusBagi("idle");
+    setPesanBagi("");
+    urlFileLampiranAsync(item).then(async (u) => {
       if (!hidup) return;
-      const final = u || item.dataUrl || item.thumb || null;
+      let final = u || item.dataUrl || item.thumb || null;
+      /* data: URL tidak bisa dibuka di tab baru — WebKit memblokir navigasi
+         top-level ke data: URL, tab yang terbuka jadi kosong (about:blank).
+         Ubah dulu jadi blob URL supaya Share/Unduh selalu jalan. */
+      if (final && final.startsWith("data:")) {
+        try {
+          const b = await (await fetch(final)).blob();
+          if (!hidup) return;
+          blobBuatan = URL.createObjectURL(b);
+          final = blobBuatan;
+        } catch {
+          /* pakai data URL apa adanya */
+        }
+      }
+      if (!hidup) return;
       setSrc(final);
       setGagal(!final);
     });
     return () => {
       hidup = false;
+      if (blobBuatan) URL.revokeObjectURL(blobBuatan);
     };
   }, [item]);
   /* Kalau daftar gambar menyusut (mis. habis dihapus), jaga indeks tetap
@@ -228,30 +253,74 @@ export function Lightbox({ items, index, onIndex, onClose, onDelete }) {
     a.click();
     a.remove();
   };
-  /* Tombol panah ke atas itu Share. Tapi Web Share cuma ada di konteks
-     aman (https/localhost) — VITY di HP jalan lewat http:// LAN, jadi
-     browser tidak menyediakan navigator.share sama sekali. Kalau begitu,
-     buka gambar di tab baru supaya bisa dibagikan dari menu browser
-     (tekan lama gambarnya). Cek ketersediaan share dilakukan sinkron
-     supaya tab baru tidak diblokir pemblokir pop-up. */
-  const bagikan = async () => {
-    if (!src) return;
-    if (!navigator.share) {
-      window.open(src, "_blank");
-      return;
-    }
+  /* Tombol panah ke atas membuka sheet Share (Salin link + WhatsApp),
+     kayak di Muse. Web Share cuma ada di konteks aman (https/localhost) —
+     VITY di HP jalan lewat http:// LAN, jadi navigator.share tidak ada di
+     browser itu dan berbagi file langsung tidak bisa; makanya link dibuat
+     lewat backend (Google Drive) dan WhatsApp memakai link itu. */
+  const dapatkanTautan = async () => {
+    if (tautan) return tautan;
+    if (!src) return null;
+    setStatusBagi("mengunggah");
+    setPesanBagi("");
     try {
       const blob = await (await fetch(src)).blob();
-      const file = new File([blob], nama, { type: blob.type || "image/png" });
-      if (navigator.canShare && !navigator.canShare({ files: [file] })) {
-        window.open(src, "_blank");
+      const url = await unggahUntukDibagikan(blob, nama);
+      setTautan(url);
+      setStatusBagi("idle");
+      return url;
+    } catch (e) {
+      setStatusBagi("gagal");
+      setPesanBagi(e.message || "Gagal membuat link.");
+      return null;
+    }
+  };
+  const salinLink = async () => {
+    const url = await dapatkanTautan();
+    if (!url) return;
+    const ok = await salinTeks(url);
+    if (ok) {
+      setStatusBagi("disalin");
+    } else {
+      setStatusBagi("gagal");
+      setPesanBagi("Gagal menyalin otomatis — salin manual link di bawah ini ya.");
+    }
+  };
+  /* Bagikan file-nya langsung (tanpa link): share sheet bawaan kalau ada,
+     kalau tidak buka gambar di tab baru — src di sini selalu blob: URL
+     (data: URL sudah diubah saat dimuat), jadi tab tidak blank lagi. */
+  const bagikanFile = async () => {
+    if (!src) return;
+    if (navigator.share) {
+      try {
+        const blob = await (await fetch(src)).blob();
+        const file = new File([blob], nama, { type: blob.type || "image/png" });
+        if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+          return;
+        }
+      } catch (e) {
+        if (e && e.name === "AbortError") return; // user menutup share sheet
+      }
+    }
+    window.open(src, "_blank");
+  };
+  const bagiWA = async () => {
+    let url = tautan;
+    if (!url) {
+      setStatusBagi("menyiapkan-wa");
+      url = await dapatkanTautan();
+      if (!url) {
+        /* Link tidak bisa dibuat (mis. Drive belum disetup): bagikan
+           file-nya langsung, lalu beri tahu caranya. */
+        setStatusBagi("idle");
+        bagikanFile();
+        setPesanBagi("Dibuka di tab baru — tekan lama gambarnya lalu Share → WhatsApp.");
         return;
       }
-      await navigator.share({ files: [file] });
-    } catch (e) {
-      if (e && e.name === "AbortError") return; // user menutup share sheet
-      window.open(src, "_blank");
     }
+    const w = window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, "_blank");
+    if (!w) setPesanBagi("Tab WhatsApp diblokir browser — ketuk link di bawah ini lalu bagikan manual ya.");
   };
   const tombolAksi = "w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center shrink-0";
   return (
@@ -261,7 +330,7 @@ export function Lightbox({ items, index, onIndex, onClose, onDelete }) {
           ×
         </button>
         <div className="flex items-center gap-2">
-          <button onClick={bagikan} className={tombolAksi} aria-label="Bagikan">
+          <button onClick={() => setSheetBagi(true)} className={tombolAksi} aria-label="Bagikan">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
           </button>
           {onDelete && (
@@ -303,6 +372,65 @@ export function Lightbox({ items, index, onIndex, onClose, onDelete }) {
           </>
         )}
       </div>
+      {/* Sheet Share ala Muse: pratinjau + Salin link + WhatsApp. */}
+      {sheetBagi && (
+        <div className="fixed inset-0 z-[75] flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setSheetBagi(false)} />
+          <div className="relative w-full max-w-md bg-card rounded-t-3xl px-5 pt-3 pb-8">
+            <div className="pb-2 flex justify-center">
+              <div className="w-10 h-1 rounded-full bg-gray-600" />
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <h2 className="text-xl font-semibold text-white">Share</h2>
+              <button
+                onClick={() => setSheetBagi(false)}
+                className="w-9 h-9 rounded-full bg-card2 text-white text-xl leading-none flex items-center justify-center"
+                aria-label="Tutup"
+              >
+                ×
+              </button>
+            </div>
+            {src && (
+              <img src={src} alt={nama} className="w-full max-h-56 object-contain rounded-2xl bg-black my-3" />
+            )}
+            <p className="text-center text-gray-300 text-[15px] px-2 pb-3">
+              Siapa pun yang punya link ini bisa melihat media ini.
+            </p>
+            <button
+              onClick={salinLink}
+              disabled={statusBagi === "mengunggah" || statusBagi === "menyiapkan-wa"}
+              className="w-full flex items-center gap-4 px-2 py-3 text-left active:bg-card2 rounded-xl disabled:opacity-60"
+            >
+              <span className="w-11 h-11 rounded-full bg-card2 flex items-center justify-center text-white shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+              </span>
+              <span className="flex-1 text-[17px] text-white">
+                {statusBagi === "mengunggah" ? "Mengunggah…" : statusBagi === "disalin" ? "Disalin ✓" : "Salin link"}
+              </span>
+            </button>
+            <button
+              onClick={bagiWA}
+              disabled={statusBagi === "mengunggah" || statusBagi === "menyiapkan-wa"}
+              className="w-full flex items-center gap-4 px-2 py-3 text-left active:bg-card2 rounded-xl disabled:opacity-60"
+            >
+              <span className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: "#25D366" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z" fill="#fff" /><path d="M9 8.6c.3 2.6 2.6 5.4 5.2 5.7l.9-1.3-2.1-1.1-1 .6c-.9-.5-1.6-1.2-2.1-2.1l.6-1-1.1-2.1z" fill="#25D366" /></svg>
+              </span>
+              <span className="flex-1 text-[17px] text-white">
+                {statusBagi === "menyiapkan-wa" ? "Menyiapkan…" : "WhatsApp"}
+              </span>
+            </button>
+            {pesanBagi && (
+              <p className="text-center text-[14px] text-gray-400 px-2 pt-2 break-words">{pesanBagi}</p>
+            )}
+            {tautan && (
+              <a href={tautan} target="_blank" rel="noreferrer" className="block text-center text-[14px] text-accent px-2 pt-2 break-all">
+                {tautan}
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

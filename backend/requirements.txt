@@ -9,3 +9,5 @@ python-jose[cryptography]>=3.3
 passlib[bcrypt]>=1.7
 openai>=1.0
 python-multipart>=0.0.9
+google-api-python-client>=2.0
+google-auth>=2.0

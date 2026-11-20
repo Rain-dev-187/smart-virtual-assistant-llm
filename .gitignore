@@ -15,6 +15,9 @@ dist-ssr/
 .env
 .env.local
 
+# Secrets (jangan commit kunci)
+service-account.json
+
 # OS / IDE
 .DS_Store
 Thumbs.db
