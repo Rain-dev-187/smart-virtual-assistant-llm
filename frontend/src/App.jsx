@@ -307,7 +307,6 @@ function AppInner() {
         <MobileTopBar
           onOpenDrawer={() => setDrawerOpen(true)}
           onOpenProfile={openProfile}
-          onCreateChat={buatObrolan}
           view={view}
         />
         <div className="flex-1 min-h-0 relative">{mainView}</div>
