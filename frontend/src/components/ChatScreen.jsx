@@ -9,6 +9,7 @@ const INITIAL = [
     role: "asisten",
     sapaan: true,
     text: teksSapaan(getDisplayName()),
+    waktu: Date.now(),
   },
 ];
 
@@ -40,6 +41,30 @@ const saveSessionId = (id) => {
     /* localStorage tidak tersedia: sesi jalan tanpa persistensi */
   }
 };
+
+/* ---------- Pemisah hari di chat ----------
+   Bukan jam di tiap pesan: hanya satu chip tiap ganti hari, di atas pesan
+   pertama hari itu.
+   - Dalam seminggu terakhir: nama hari + jam ("Rabu, 09.04").
+   - Lebih dari seminggu lalu: nama hari + tanggal ("Rabu, 12 November 2026"). */
+function hariYangSama(a, b) {
+  const da = new Date(a), db = new Date(b);
+  return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
+}
+function selisihHari(a, b) {
+  const da = new Date(a); da.setHours(0, 0, 0, 0);
+  const db = new Date(b); db.setHours(0, 0, 0, 0);
+  return Math.round((db - da) / 86400000);
+}
+function labelPemisahHari(ts) {
+  const hari = new Date(ts).toLocaleDateString("id-ID", { weekday: "long" });
+  if (selisihHari(ts, Date.now()) <= 7) {
+    const jam = new Date(ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+    return `${hari}, ${jam}`;
+  }
+  const tanggal = new Date(ts).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  return `${hari}, ${tanggal}`;
+}
 
 export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide, onOpenProfile, panelOpen = false }) {
   const [messages, setMessages] = useState(INITIAL);
@@ -73,7 +98,7 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
     const quoted = replyTo;
     setDraft("");
     setReplyTo(null);
-    setMessages((m) => [...m, { role: "user", text, replyTo: quoted ? { text: quoted.text, role: quoted.role } : null }]);
+    setMessages((m) => [...m, { role: "user", text, waktu: Date.now(), replyTo: quoted ? { text: quoted.text, role: quoted.role } : null }]);
     /* Selama progress berjalan avatar beranimasi "working" + indikator mengetik */
     setSending(true);
     try {
@@ -91,14 +116,14 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
       if (data.session_id) saveSessionId(data.session_id);
       setMessages((m) => [
         ...m,
-        { role: "asisten", text: data.reply || "(backend tidak mengembalikan balasan)" },
+        { role: "asisten", text: data.reply || "(backend tidak mengembalikan balasan)", waktu: Date.now() },
       ]);
     } catch (err) {
       const errText =
         err && err.message === "unauthorized"
           ? "Gagal: API key ditolak backend (401). Cek VITE_API_KEY di .env frontend, lalu refresh halaman."
           : "Gagal menghubungi backend. Pastikan backend jalan (uvicorn app.main:app --reload --port 8000), lalu kirim ulang pesanmu.";
-      setMessages((m) => [...m, { role: "asisten", text: errText }]);
+      setMessages((m) => [...m, { role: "asisten", text: errText, waktu: Date.now() }]);
     } finally {
       setSending(false);
     }
@@ -328,8 +353,21 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
 
       {/* Area chat */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-4 space-y-4" onClick={() => setMenu(null)}>
-        {messages.map((m, idx) =>
-          m.role === "user" ? (
+        {messages.map((m, idx) => {
+          /* Chip pemisah hari: muncul hanya saat harinya ganti dari pesan
+             sebelumnya — bukan jam di tiap pesan. */
+          const prev = messages[idx - 1];
+          const gantiHari = m.waktu && (!prev || !prev.waktu || !hariYangSama(m.waktu, prev.waktu));
+          return (
+            <React.Fragment key={idx}>
+              {gantiHari && (
+                <div className="flex justify-center">
+                  <div className="px-3 py-1 rounded-full bg-card2 text-[12px] text-gray-400">
+                    {labelPemisahHari(m.waktu)}
+                  </div>
+                </div>
+              )}
+              {m.role === "user" ? (
             <div key={idx} className="flex justify-end group">
               <div className="flex flex-col items-end">
                 <div className="flex items-center gap-1">
@@ -378,8 +416,10 @@ export default function ChatScreen({ onOpenDrawer, onOpenMenu, onToggleChatSide,
                 <TombolTitik idx={idx} className={m.reaction ? "mt-4" : "mt-1.5"} />
               </div>
             </div>
-          )
-        )}
+              )}
+            </React.Fragment>
+          );
+        })}
 
         {/* Indikator progress: avatar mini lompat-lompat + titik mengetik */}
         {sending && (
