@@ -7,24 +7,28 @@ from app.main import app
 client = TestClient(app)
 
 
+# Persiapan tiap tes: kosongkan penyimpanan sesi dan matikan auth (mode dev).
 def setup_function():
     # tiap test mulai dari penyimpanan kosong + auth mati (mode dev)
     store.reset_store()
     settings.api_key = ""
 
 
+# Tes: endpoint akar menjawab 200 dengan status ok.
 def test_root_ok():
     r = client.get("/")
     assert r.status_code == 200
     assert r.json()["status"] == "ok"
 
 
+# Tes: endpoint health menjawab status ok.
 def test_health_ok():
     r = client.get("/api/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
 
 
+# Tes: tanpa kunci LLM, chat menjawab dalam mode stub.
 def test_chat_stub_mode():
     # Tanpa LLM_API_KEY, endpoint harus balas dalam mode stub
     r = client.post("/api/chat", json={"message": "halo"})
@@ -34,11 +38,13 @@ def test_chat_stub_mode():
     assert "halo" in body["reply"]
 
 
+# Tes: pesan kosong ditolak.
 def test_chat_rejects_empty_message():
     r = client.post("/api/chat", json={"message": ""})
     assert r.status_code == 422
 
 
+# Tes: chat mengembalikan session_id dan menyimpan riwayat.
 def test_chat_returns_session_and_saves_history():
     r = client.post("/api/chat", json={"message": "halo"})
     assert r.status_code == 200
@@ -53,6 +59,7 @@ def test_chat_returns_session_and_saves_history():
     assert msgs[0]["content"] == "halo"
 
 
+# Tes: pesan berikutnya dengan session_id yang sama menyambung sesi yang sama.
 def test_chat_continues_same_session():
     r1 = client.post("/api/chat", json={"message": "pesan pertama"})
     session_id = r1.json()["session_id"]
@@ -66,6 +73,7 @@ def test_chat_continues_same_session():
     assert len(r3.json()["messages"]) == 4  # 2x user + 2x asisten
 
 
+# Tes: riwayat satu sesi bisa dihapus.
 def test_delete_history():
     r1 = client.post("/api/chat", json={"message": "halo"})
     session_id = r1.json()["session_id"]
@@ -77,6 +85,7 @@ def test_delete_history():
     assert r3.json()["messages"] == []
 
 
+# Tes: kunci API yang salah ditolak.
 def test_auth_rejects_wrong_key():
     settings.api_key = "rahasia123"
     r = client.post("/api/chat", json={"message": "halo"})
@@ -87,6 +96,7 @@ def test_auth_rejects_wrong_key():
     assert r2.status_code == 401
 
 
+# Tes: kunci API yang benar diterima.
 def test_auth_accepts_correct_key():
     settings.api_key = "rahasia123"
     r = client.post(
