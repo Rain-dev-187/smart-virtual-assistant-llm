@@ -6,6 +6,7 @@ Catatan untuk tim:
 - Route hanya memanggil fungsi-fungsi di file ini, jadi nanti saat pindah ke
   PostgreSQL, cukup ganti isi fungsi di sini — route tidak perlu diubah.
 """
+
 from __future__ import annotations
 
 import time
@@ -33,10 +34,12 @@ def get_or_create_session(session_id: str | None) -> str:
     return new_id
 
 
+# Menambahkan satu pesan (user/assistant) ke riwayat sesi.
 def add_message(session_id: str, role: str, content: str) -> None:
     _store.setdefault(session_id, []).append(Message(role=role, content=content))
 
 
+# Mengambil salinan riwayat pesan satu sesi (daftar kosong bila tidak ada).
 def get_history(session_id: str) -> list[Message]:
     return list(_store.get(session_id, []))
 
