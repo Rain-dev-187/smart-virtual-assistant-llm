@@ -1,4 +1,4 @@
-# Backend — Smart Virtual Assistant (v0.2 / riwayat chat + auth)
+# Backend — VITY (v0.2 / riwayat chat + auth)
 
 Backend FastAPI. Yang sudah jalan:
 
