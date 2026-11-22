@@ -17,7 +17,9 @@ def chat(req: ChatRequest, _auth: None = Depends(require_api_key)):
     history = [
         {"role": m.role, "content": m.content} for m in store.get_history(session_id)
     ]
-    reply, mode = generate_reply(req.message, history=history[:-1])  # tanpa pesan barusan
+    reply, mode = generate_reply(
+        req.message, history=history[:-1]
+    )  # tanpa pesan barusan
     store.add_message(session_id, "assistant", reply)
 
     return ChatResponse(reply=reply, mode=mode, session_id=session_id)

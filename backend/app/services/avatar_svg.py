@@ -57,8 +57,12 @@ SPARKS = """
       <polygon class="spark spark2" points="82,52 83.5,57 88.5,58.5 83.5,60 82,65 80.5,60 75.5,58.5 80.5,57" fill="#ffd166"/>"""
 
 
-def render_avatar_svg(body: str = "#ff9046", hat: str = "toga",
-                      accessory: str = "none", state: str = "idle") -> str:
+def render_avatar_svg(
+    body: str = "#ff9046",
+    hat: str = "toga",
+    accessory: str = "none",
+    state: str = "idle",
+) -> str:
     """state: "idle" (goyang pelan) atau "working" (lompat-lompat saat progress)."""
     working = state == "working"
     group_class = "work" if working else "sway"

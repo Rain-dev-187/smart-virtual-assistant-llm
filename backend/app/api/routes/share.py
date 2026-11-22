@@ -18,6 +18,7 @@ kunci tersebut endpoint ini menjawab 503 — tidak ada file yang terunggah
 ke mana pun. Pustaka Google juga diimpor malas di dalam fungsi, jadi
 backend tetap jalan walau google-api-python-client belum terpasang.
 """
+
 import io
 import os
 
@@ -31,7 +32,9 @@ router = APIRouter()
 KUNCI = os.environ.get(
     "GOOGLE_SERVICE_ACCOUNT_FILE",
     os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "..", "service-account.json")
+        os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "service-account.json"
+        )
     ),
 )
 
@@ -82,6 +85,6 @@ async def bagikan(file: UploadFile = File(...), _auth: None = Depends(require_ap
         ).execute()
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 — sengaja ditangkap semua: error Drive apa pun diubah menjadi jawaban 502 yang rapi
         raise HTTPException(status_code=502, detail=f"Gagal mengunggah ke Drive: {e}")
     return {"url": dibuat["webViewLink"]}

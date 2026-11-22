@@ -3,29 +3,29 @@
 Tanpa LLM_API_KEY (atau LLM_MODEL), generate_reply memakai mode stub
 supaya frontend bisa dites tanpa keluar biaya API.
 """
+
 from openai import OpenAI
 
 from app.core.config import settings
 
 
+# True bila kunci API dan nama model LLM sudah terisi di .env.
 def _llm_configured() -> bool:
     return bool(settings.llm_api_key) and bool(settings.llm_model)
 
 
-def generate_reply(
-    message: str, history: list[dict] | None = None
-) -> tuple[str, str]:
+def generate_reply(message: str, history: list[dict] | None = None) -> tuple[str, str]:
     """Kembalikan (reply, mode). Mode: 'stub' atau 'llm'.
 
     history: daftar pesan sebelumnya, format [{"role": ..., "content": ...}].
     Hanya dipakai saat LLM aktif, supaya LLM ingat konteks percakapan.
     """
     if not _llm_configured():
-        return (
+        balasan = (
             "Backend jalan dalam mode stub (LLM_API_KEY belum diisi). "
-            f"Pesanmu: {message}",
-            "stub",
+            f"Pesanmu: {message}"
         )
+        return balasan, "stub"
 
     client = OpenAI(
         api_key=settings.llm_api_key,

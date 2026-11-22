@@ -23,6 +23,7 @@ app.include_router(avatar.router, prefix="/api")
 app.include_router(share.router, prefix="/api")
 
 
+# Endpoint akar: penanda service VITY berjalan.
 @app.get("/")
 def root():
     return {"status": "ok", "service": "vity"}

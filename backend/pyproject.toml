@@ -1,0 +1,5 @@
+# Konfigurasi Ruff (pemeriksa gaya kode) untuk backend VITY.
+# B008 dimatikan karena Depends()/File() sebagai nilai bawaan parameter
+# adalah pola resmi FastAPI, bukan kesalahan.
+[tool.ruff.lint]
+ignore = ["B008"]
