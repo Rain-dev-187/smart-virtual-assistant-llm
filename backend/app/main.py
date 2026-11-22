@@ -5,7 +5,7 @@ from app.api.routes import avatar, chat, health, share
 from app.db.session import engine
 from app.models.avatar import Base as AvatarBase
 
-app = FastAPI(title="Smart Virtual Assistant API")
+app = FastAPI(title="VITY API")
 
 # Tabel fitur avatar dibuat otomatis saat startup (tabel lain menyusul via migrasi).
 AvatarBase.metadata.create_all(bind=engine)
@@ -25,4 +25,4 @@ app.include_router(share.router, prefix="/api")
 
 @app.get("/")
 def root():
-    return {"status": "ok", "service": "smart-virtual-assistant"}
+    return {"status": "ok", "service": "vity"}
