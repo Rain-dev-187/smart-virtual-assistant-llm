@@ -1,4 +1,4 @@
-# Smart Virtual Assistant (LLM)
+# VITY — Smart Virtual Assistant (LLM)
 
 Aplikasi web asisten virtual cerdas berbasis *Large Language Model* (LLM) untuk otomatisasi tugas produktivitas: manajemen tugas, penjadwalan dan pengingat, perangkuman teks, penyusunan draf pesan, dan tanya jawab dokumen (RAG).
 
