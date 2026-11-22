@@ -4,7 +4,8 @@ Dua tabel:
 - user_avatars    : konfigurasi avatar pilihan tiap user (satu baris per user)
 - avatar_requests : permintaan avatar khusus dari user (antrean untuk diproses)
 """
-from datetime import datetime, timezone
+
+from datetime import UTC, datetime
 
 from sqlalchemy import JSON, DateTime, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -14,8 +15,9 @@ class Base(DeclarativeBase):
     pass
 
 
+# Waktu saat ini (UTC) untuk isian otomatis kolom tanggal.
 def _now():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class UserAvatar(Base):
