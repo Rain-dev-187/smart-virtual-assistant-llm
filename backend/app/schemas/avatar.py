@@ -1,4 +1,5 @@
 """Skema request/response untuk endpoint avatar."""
+
 from datetime import datetime
 from typing import Literal
 
@@ -13,6 +14,7 @@ class AvatarConfig(BaseModel):
     hat: Literal["toga", "topi", "mahkota", "none"] = "toga"
     accessory: Literal["none", "kacamata"] = "none"
 
+    # Memastikan warna body berbentuk kode hex yang aman (format #rrggbb).
     @field_validator("body")
     @classmethod
     def _cek_hex(cls, v: str) -> str:
