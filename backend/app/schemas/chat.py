@@ -1,4 +1,5 @@
 """Skema request/response untuk endpoint chat."""
+
 from pydantic import BaseModel, Field
 
 
