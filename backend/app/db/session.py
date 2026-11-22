@@ -7,6 +7,7 @@ engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
+# Membuka sesi database untuk satu request, lalu menutupnya setelah selesai.
 def get_db():
     db = SessionLocal()
     try:
